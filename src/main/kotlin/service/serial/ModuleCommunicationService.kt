@@ -229,16 +229,18 @@ class ModuleCommunicationService : CommunicationListener {
                 )
 
                 mainThread {
-                    sensorListeners.forEach { listener ->
-                        listener.onSensorHit(
-                            command.value
-                        )
-                    }
+                    synchronized(sensorListeners){
+                        sensorListeners.forEach { listener ->
+                            listener.onSensorHit(
+                                command.value
+                            )
+                        }
 
-                    sensorHitListeners.forEach { listener ->
-                        listener.onSensorBlow(
-                            command.value
-                        )
+                        sensorHitListeners.forEach { listener ->
+                            listener.onSensorBlow(
+                                command.value
+                            )
+                        }
                     }
                 }
 

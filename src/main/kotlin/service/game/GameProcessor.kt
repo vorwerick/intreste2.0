@@ -172,8 +172,10 @@ class GameProcessor() {
             Service.moduleCommunicationService.addSensorBlowListener(gameSensorBlowListener)
 
             Service.externalDisplayService.clearFullMessage()
+            Thread.sleep(10)
             Service.externalDisplayService.updateTime(gameObject.configuration.timeoutSeconds)
-            Service.externalDisplayService.updateScore(0)
+            Thread.sleep(20)
+            Service.externalDisplayService.updateScore((gameStatus.hitCount * gameObject.configuration.hitPoints) + gameStatus.missCount * gameObject.configuration.missesPoints)
 
             generateActivePanel(
                 gameObject.rules.maxActivePanels,
@@ -186,6 +188,7 @@ class GameProcessor() {
                     gameStatus.timeout = totalSeconds - secondsPassed
                     Service.gameService.gameProcessListener?.onGameTimeStep(gameStatus, gameObject)
                     Service.externalDisplayService.updateTime(gameStatus.timeout)
+
                     Service.remoteMasterService.sendCurrentGameInfo(
                         gameState,
                         gameObject,
@@ -234,6 +237,7 @@ class GameProcessor() {
         Service.moduleCommunicationService.lightOffPanel(sensorIndex) // off
         Service.gameService.gameProcessListener?.onGameHit(gameStatus, gameObject)
         Service.remoteMasterService.sendCurrentGameInfo(gameState, gameObject, gameStatus)
+        Service.externalDisplayService.updateScore((gameStatus.hitCount * gameObject.configuration.hitPoints) + gameStatus.missCount * gameObject.configuration.missesPoints)
 
         val hitPoints = gameObject.configuration.hitPoints
         Service.externalDisplayService.showAnimation(true, "+" + gameObject.configuration.hitPoints)
@@ -247,6 +251,8 @@ class GameProcessor() {
             Commands.PanelColor.RED,
             300
         )
+        Service.externalDisplayService.updateScore((gameStatus.hitCount * gameObject.configuration.hitPoints) + gameStatus.missCount * gameObject.configuration.missesPoints)
+
         Service.gameService.gameProcessListener?.onGameMiss(gameStatus, gameObject)
         Service.remoteMasterService.sendCurrentGameInfo(gameState, gameObject, gameStatus)
         Service.externalDisplayService.showAnimation(false, gameObject.configuration.missesPoints.toString())

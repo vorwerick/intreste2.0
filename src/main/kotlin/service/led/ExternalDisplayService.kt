@@ -99,6 +99,7 @@ class ExternalDisplayService {
                     }
                     if (animationDuration == 0) {
                         clearDisplay(RECT_ANIMATION_DISPLAY_96x16)
+                        clearDisplay(RECT_GAME_MESSAGE_DISPLAY_96X48_TYPE2)
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -151,11 +152,13 @@ class ExternalDisplayService {
                 clearDisplay(RECT_ANIMATION_DISPLAY_96x16)
             }
             DisplaySize._96x48_TYP1 -> {
+                clearDisplay(RECT_FULL_DISPLAY_96x48_TYPE1)
                 animationDuration = -1
-                drawScoreLine(4)
+                //drawScoreLine(4)
             }
             DisplaySize._96x48_TYP2 -> {
                 clearDisplay(RECT_HIT_MESSAGE_DISPLAY_96x48_TYPE2)
+                clearDisplay(RECT_GAME_MESSAGE_DISPLAY_96X48_TYPE2)
             }
         }
 
@@ -165,7 +168,7 @@ class ExternalDisplayService {
         when (Service.settingsService.externalDisplaySize) {
             DisplaySize._96x16 -> {
                 if (hit) {
-                    showTextOnDisplay(RECT_ANIMATION_DISPLAY_96x16, "OK", GREEN, FONT_CLASSIC)
+                    showTextOnDisplay(RECT_ANIMATION_DISPLAY_96x16, "OK", YELLOW, FONT_CLASSIC)
                 } else {
                     showTextOnDisplay(RECT_ANIMATION_DISPLAY_96x16, "X", RED, FONT_CLASSIC)
                 }
@@ -173,24 +176,41 @@ class ExternalDisplayService {
             }
             DisplaySize._96x48_TYP1 -> {
                 if (hit) {
+                    showTextOnDisplay(
+                        RECT_FULL_DISPLAY_96x48_TYPE1,
+                        "OK",
+                        GREEN,
+                        FONT_CLASSIC
+                    )
+                } else {
+                    showTextOnDisplay(
+                        RECT_FULL_DISPLAY_96x48_TYPE1,
+                        "XXX",
+                        RED,
+                        FONT_CLASSIC
+                    )
+                }
+                animationDuration = 8
+
+                /** if (hit) {
                     drawScoreLine(0)
                 } else {
                     drawScoreLine(1)
                 }
-                animationDuration = 8
+                animationDuration = 8 */
             }
             DisplaySize._96x48_TYP2 -> {
                 if (hit) {
                     showTextOnDisplay(
-                        RECT_HIT_MESSAGE_DISPLAY_96x48_TYPE2,
-                        "HIT $score",
+                        RECT_GAME_MESSAGE_DISPLAY_96X48_TYPE2,
+                        "O K",
                         GREEN,
                         FONT_MEDIUM
                     )
                 } else {
                     showTextOnDisplay(
-                        RECT_HIT_MESSAGE_DISPLAY_96x48_TYPE2,
-                        "MISS $score",
+                        RECT_GAME_MESSAGE_DISPLAY_96X48_TYPE2,
+                        "X X X",
                         RED,
                         FONT_MEDIUM
                     )
@@ -294,7 +314,7 @@ class ExternalDisplayService {
                 //clearDisplay(RECT_TIME_DISPLAY_96x48_TYPE1)
             }
             DisplaySize._96x48_TYP2 -> {
-
+                clearDisplay(RECT_TIME_LABEL_DISPLAY_96x48_TYPE2)
             }
         }
     }
@@ -307,7 +327,7 @@ class ExternalDisplayService {
             DisplaySize._96x48_TYP1 -> {
                 showTextOnDisplay(
                     RECT_TIME_DISPLAY_96x48_TYPE1,
-                    "RESULT",
+                    "RESULT", /// result is biggest
                     YELLOW,
                     FONT_CLASSIC
                 )
@@ -445,7 +465,7 @@ class ExternalDisplayService {
                         GREEN,
                         FONT_CLASSIC
                     )
-                    delay(3000)
+                    delay(1000)
                     clearAll()
                 }
             }

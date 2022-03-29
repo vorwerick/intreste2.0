@@ -39,7 +39,7 @@ class SettingsService {
     var lcdDisplayPort: Int = Constants.DEFAULT_LCD_DISPLAY_PORT
     var lcdDisplayBrightness: Int = Constants.DEFAULT_LCD_DISPLAY_BRIGHTNESS// 0-255
     var sortedPanels: List<Panel>? = null
-    var externalDisplaySize: ExternalDisplayService.DisplaySize = Constants.DEFAULT_LCD_DISPLAY_SIZE
+    var externalDisplaySize: ExternalDisplayService.DisplaySize = ExternalDisplayService.DisplaySize._96x48_TYP1
 
     var lcdDisplayConnected = false
 
@@ -56,12 +56,7 @@ class SettingsService {
         lcdDisplayBrightness =
             preferences.getInt(SETTINGS_LCD_DISPLAY_BRIGHTNESS, Constants.DEFAULT_LCD_DISPLAY_BRIGHTNESS)
         sortedPanels = getPanelSorting(preferences.get(PANEL_SORTING, ""))
-        externalDisplaySize = ExternalDisplayService.DisplaySize.valueOf(
-            preferences.get(
-                SETTINGS_LCD_DISPLAY_SIZE,
-                Constants.DEFAULT_LCD_DISPLAY_SIZE.name
-            )
-        )
+        externalDisplaySize = ExternalDisplayService.DisplaySize._96x48_TYP1
     }
 
     fun saveSettings() {

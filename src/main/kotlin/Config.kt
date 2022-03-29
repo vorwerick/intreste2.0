@@ -7,5 +7,5 @@ object Config {
 
     const val COMMAND_BYTE_ARRAY_SIZE: Int = 1024
 
-    const val WRITE_SAFE_DELAY = 2L
+    const val WRITE_SAFE_DELAY = 10L
 }
