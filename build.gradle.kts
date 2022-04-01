@@ -2,8 +2,8 @@ import org.jetbrains.compose.compose
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
-    kotlin("jvm")
-    id("org.jetbrains.compose")
+    kotlin("jvm") version ("1.6.10")
+    id("org.jetbrains.compose") version ("1.1.0-alpha04")
 }
 
 repositories {
@@ -44,8 +44,8 @@ compose.desktop {
         nativeDistributions {
             appResourcesRootDir.set(project.layout.projectDirectory.dir("xxx"))
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "KotlinJvmComposeDesktopApplication"
-            packageVersion = "1.0.0"
+            packageName = "Intreste"
+            packageVersion = "2.0.0"
         }
     }
 }
