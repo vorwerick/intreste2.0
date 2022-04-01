@@ -213,7 +213,7 @@ class GameProcessor() {
                 Service.externalDisplayService.stopAnimation()
                 Service.externalDisplayService.clearTime()
                 delay(100)
-                Service.externalDisplayService.showScoreTitle()
+                Service.externalDisplayService.showScoreTitle((gameStatus.hitCount * gameObject.configuration.hitPoints) + gameStatus.missCount * gameObject.configuration.missesPoints)
             }
             Log.info(Log.MessageGroup.GAME, "Game was finished")
 
@@ -356,13 +356,18 @@ class GameProcessor() {
                     secondsPassed,
                     Constants.READY_COUNTDOWN
                 )
-                var ledPanelMessage = (secondsTotal - secondsPassed).toString()
-                if (secondsPassed == secondsTotal) {
-                    ledPanelMessage = "START"
+                var timeout: Int = (secondsTotal - secondsPassed)
+                if (timeout <= 1) {
+                    timeout = 1
                 }
+
                 Service.externalDisplayService.updateFullMessage(
-                    ledPanelMessage,
-                    ExternalDisplayService.RED
+                    timeout.toString(),
+                    when (timeout) {
+                        3 -> ExternalDisplayService.RED
+                        2 -> ExternalDisplayService.YELLOW
+                        else -> ExternalDisplayService.GREEN
+                    }
                 )
             }, onFinished = {
                 executor.submit {

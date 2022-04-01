@@ -19,7 +19,7 @@ class ExternalDisplayService {
     }
 
     enum class DisplaySize {
-        _96x16, _96x48_TYP1, _96x48_TYP2
+        _96x16, _96x48_TYP1
     }
 
     companion object {
@@ -46,16 +46,9 @@ class ExternalDisplayService {
         const val RECT_FULL_DISPLAY_96x16 = "N03"
         const val RECT_LEFT_DISPLAY_96x16 = "N04"
 
-        const val RECT_SCORE_DISPLAY_96x48_TYPE1 = "N00"
-        const val RECT_TIME_DISPLAY_96x48_TYPE1 = "N01"
-        const val RECT_FULL_DISPLAY_96x48_TYPE1 = "N02"
-
-        const val RECT_SCORE_LABEL_DISPLAY_96x48_TYPE2 = "N00"
-        const val RECT_TIME_LABEL_DISPLAY_96x48_TYPE2 = "N01"
-        const val RECT_TIME_VALUE_DISPLAY_96x48_TYPE2 = "N03"
-        const val RECT_SCORE_VALUE_DISPLAY_96x48_TYPE2 = "N04"
-        const val RECT_HIT_MESSAGE_DISPLAY_96x48_TYPE2 = "N05"
-        const val RECT_GAME_MESSAGE_DISPLAY_96X48_TYPE2 = "N06"
+        const val R_96x48_FIRST = "N00"
+        const val R_96x48_SECOND = "N01"
+        const val R_96x48_THIRD = "N02"
 
 
         const val CLEAR_RECT = "EC"
@@ -99,11 +92,24 @@ class ExternalDisplayService {
                     }
                     if (animationDuration == 0) {
                         clearDisplay(RECT_ANIMATION_DISPLAY_96x16)
-                        clearDisplay(RECT_GAME_MESSAGE_DISPLAY_96X48_TYPE2)
+                        clearDisplay(R_96x48_THIRD)
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
+            }
+        }
+    }
+
+    fun showMessageSortPanels(){
+        when (Service.settingsService.externalDisplaySize) {
+            DisplaySize._96x16 -> {
+                showTextOnDisplay(RECT_FULL_DISPLAY_96x16, "SORT!", RED, FONT_CLASSIC)
+            }
+            DisplaySize._96x48_TYP1 -> {
+                clearDisplay(R_96x48_FIRST)
+                clearDisplay(R_96x48_THIRD)
+                showTextOnDisplay(R_96x48_SECOND, "SORT PANELS!", RED, FONT_CLASSIC_SMALLER)
             }
         }
     }
@@ -115,20 +121,12 @@ class ExternalDisplayService {
                 showTextOnDisplay(RECT_FULL_DISPLAY_96x16, message, color, FONT_CLASSIC)
             }
             DisplaySize._96x48_TYP1 -> {
-                showTextOnDisplay(RECT_FULL_DISPLAY_96x48_TYPE1, message, color, FONT_CLASSIC_SMALLER)
-            }
-            DisplaySize._96x48_TYP2 -> {
-                showTextOnDisplay(
-                    RECT_GAME_MESSAGE_DISPLAY_96X48_TYPE2,
-                    message,
-                    color,
-                    FONT_MEDIUM
-                )
+                clearDisplay(R_96x48_FIRST)
+                clearDisplay(R_96x48_THIRD)
+                showTextOnDisplay(R_96x48_SECOND, message, color, FONT_CLASSIC)
             }
         }
-
     }
-
 
     fun clearFullMessage() {
         when (Service.settingsService.externalDisplaySize) {
@@ -136,10 +134,7 @@ class ExternalDisplayService {
                 clearDisplay(RECT_FULL_DISPLAY_96x16)
             }
             DisplaySize._96x48_TYP1 -> {
-                clearDisplay(RECT_FULL_DISPLAY_96x48_TYPE1)
-            }
-            DisplaySize._96x48_TYP2 -> {
-                clearDisplay(RECT_GAME_MESSAGE_DISPLAY_96X48_TYPE2)
+                clearDisplay(R_96x48_SECOND)
             }
         }
 
@@ -152,13 +147,9 @@ class ExternalDisplayService {
                 clearDisplay(RECT_ANIMATION_DISPLAY_96x16)
             }
             DisplaySize._96x48_TYP1 -> {
-                clearDisplay(RECT_FULL_DISPLAY_96x48_TYPE1)
+                clearDisplay(R_96x48_THIRD)
                 animationDuration = -1
                 //drawScoreLine(4)
-            }
-            DisplaySize._96x48_TYP2 -> {
-                clearDisplay(RECT_HIT_MESSAGE_DISPLAY_96x48_TYPE2)
-                clearDisplay(RECT_GAME_MESSAGE_DISPLAY_96X48_TYPE2)
             }
         }
 
@@ -177,46 +168,29 @@ class ExternalDisplayService {
             DisplaySize._96x48_TYP1 -> {
                 if (hit) {
                     showTextOnDisplay(
-                        RECT_FULL_DISPLAY_96x48_TYPE1,
+                        R_96x48_THIRD,
                         "OK",
                         GREEN,
-                        FONT_CLASSIC
+                        FONT_CLASSIC_SMALLER
                     )
                 } else {
                     showTextOnDisplay(
-                        RECT_FULL_DISPLAY_96x48_TYPE1,
+                        R_96x48_THIRD,
                         "XXX",
                         RED,
-                        FONT_CLASSIC
+                        FONT_CLASSIC_SMALLER
                     )
                 }
                 animationDuration = 8
 
                 /** if (hit) {
-                    drawScoreLine(0)
+                drawScoreLine(0)
                 } else {
-                    drawScoreLine(1)
+                drawScoreLine(1)
                 }
                 animationDuration = 8 */
             }
-            DisplaySize._96x48_TYP2 -> {
-                if (hit) {
-                    showTextOnDisplay(
-                        RECT_GAME_MESSAGE_DISPLAY_96X48_TYPE2,
-                        "O K",
-                        GREEN,
-                        FONT_MEDIUM
-                    )
-                } else {
-                    showTextOnDisplay(
-                        RECT_GAME_MESSAGE_DISPLAY_96X48_TYPE2,
-                        "X X X",
-                        RED,
-                        FONT_MEDIUM
-                    )
-                }
-                animationDuration = 8
-            }
+
         }
 
     }
@@ -239,37 +213,21 @@ class ExternalDisplayService {
             DisplaySize._96x48_TYP1 -> {
                 if (score >= 0) {
                     showTextOnDisplay(
-                        RECT_SCORE_DISPLAY_96x48_TYPE1,
+                        R_96x48_FIRST,
                         "SCORE $score",
                         GREEN,
                         FONT_CLASSIC_SMALLER
                     )
                 } else {
                     showTextOnDisplay(
-                        RECT_SCORE_DISPLAY_96x48_TYPE1,
+                        R_96x48_FIRST,
                         "SCORE $score",
                         RED,
                         FONT_CLASSIC_SMALLER
                     )
                 }
             }
-            DisplaySize._96x48_TYP2 -> {
-                if (score >= 0) {
-                    showTextOnDisplay(
-                        RECT_SCORE_LABEL_DISPLAY_96x48_TYPE2,
-                        score.toString(),
-                        GREEN,
-                        FONT_32_BOLD
-                    )
-                } else {
-                    showTextOnDisplay(
-                        RECT_SCORE_LABEL_DISPLAY_96x48_TYPE2,
-                        score.toString(),
-                        RED,
-                        FONT_32_BOLD
-                    )
-                }
-            }
+
         }
     }
 
@@ -287,21 +245,13 @@ class ExternalDisplayService {
             DisplaySize._96x48_TYP1 -> {
                 val timeString = "TIME ${time}s"
                 showTextOnDisplay(
-                    RECT_TIME_DISPLAY_96x48_TYPE1,
+                    R_96x48_SECOND,
                     timeString,
                     YELLOW,
                     FONT_CLASSIC_SMALLER
                 )
             }
-            DisplaySize._96x48_TYP2 -> {
-                val timeString = "${time}s"
-                showTextOnDisplay(
-                    RECT_TIME_LABEL_DISPLAY_96x48_TYPE2,
-                    timeString,
-                    YELLOW,
-                    FONT_32_BOLD
-                )
-            }
+
         }
     }
 
@@ -311,36 +261,41 @@ class ExternalDisplayService {
                 clearDisplay(RECT_TIME_DISPLAY_96x16)
             }
             DisplaySize._96x48_TYP1 -> {
-                //clearDisplay(RECT_TIME_DISPLAY_96x48_TYPE1)
+                //clearDisplay(R_96x48_FIRST)
             }
-            DisplaySize._96x48_TYP2 -> {
-                clearDisplay(RECT_TIME_LABEL_DISPLAY_96x48_TYPE2)
-            }
+
         }
     }
 
-    fun showScoreTitle() {
-        when (Service.settingsService.externalDisplaySize) {
-            DisplaySize._96x16 -> {
-                showTextOnDisplay(RECT_LEFT_DISPLAY_96x16, "SCORE", YELLOW, FONT_CLASSIC)
-            }
-            DisplaySize._96x48_TYP1 -> {
-                showTextOnDisplay(
-                    RECT_TIME_DISPLAY_96x48_TYPE1,
-                    "RESULT", /// result is biggest
-                    YELLOW,
-                    FONT_CLASSIC
-                )
-            }
-            DisplaySize._96x48_TYP2 -> {
-                showTextOnDisplay(
-                    RECT_GAME_MESSAGE_DISPLAY_96X48_TYPE2,
-                    "RESULT",
-                    YELLOW,
-                    FONT_CLASSIC
-                )
-            }
+    fun showScoreTitle(score: Int) = when (Service.settingsService.externalDisplaySize) {
+        DisplaySize._96x16 -> {
+            showTextOnDisplay(RECT_LEFT_DISPLAY_96x16, "SCORE", YELLOW, FONT_CLASSIC)
         }
+        DisplaySize._96x48_TYP1 -> {
+            showTextOnDisplay(
+                R_96x48_FIRST,
+                "FINAL", /// result is biggest
+                YELLOW,
+                FONT_CLASSIC_SMALLER
+            )
+            showTextOnDisplay(
+                R_96x48_SECOND,
+                "SCORE", /// result is biggest
+                YELLOW,
+                FONT_CLASSIC_SMALLER
+            )
+            showTextOnDisplay(
+                R_96x48_THIRD,
+                score.toString(), /// result is biggest
+                when {
+                    score < 0 -> RED
+                    score > 0 -> GREEN
+                    else -> YELLOW
+                },
+                FONT_CLASSIC_SMALLER
+            )
+        }
+
     }
 
     fun clearScoreTitle() {
@@ -408,20 +363,11 @@ class ExternalDisplayService {
                 defineDisplay(RECT_LEFT_DISPLAY_96x16, 34, 0, 96, 16, TEXT_ALIGN_CENTER)
             }
             DisplaySize._96x48_TYP1 -> {
-                defineDisplay(RECT_SCORE_DISPLAY_96x48_TYPE1, 0, 0, 96, 16, TEXT_ALIGN_CENTER)
-                defineDisplay(RECT_TIME_DISPLAY_96x48_TYPE1, 0, 16, 96, 32, TEXT_ALIGN_CENTER)
-                defineDisplay(RECT_FULL_DISPLAY_96x48_TYPE1, 0, 32, 96, 48, TEXT_ALIGN_CENTER)
+                defineDisplay(R_96x48_FIRST, 0, 0, 96, 16, TEXT_ALIGN_CENTER)
+                defineDisplay(R_96x48_SECOND, 0, 16, 96, 32, TEXT_ALIGN_CENTER)
+                defineDisplay(R_96x48_THIRD, 0, 32, 96, 48, TEXT_ALIGN_CENTER)
             }
-            DisplaySize._96x48_TYP2 -> {
-                defineDisplay(
-                    RECT_SCORE_LABEL_DISPLAY_96x48_TYPE2, 0,
-                    16,
-                    48,
-                    48, TEXT_ALIGN_CENTER
-                )
-                defineDisplay(RECT_TIME_LABEL_DISPLAY_96x48_TYPE2, 48, 16, 96, 48, TEXT_ALIGN_CENTER)
 
-            }
         }
 
     }
@@ -441,34 +387,22 @@ class ExternalDisplayService {
             }
             DisplaySize._96x48_TYP1 -> {
                 GlobalScope.launch {
-                    showTextOnDisplay(RECT_SCORE_DISPLAY_96x48_TYPE1, "TEST", GREEN, FONT_32)
-                    delay(200)
-                    showTextOnDisplay(RECT_TIME_DISPLAY_96x48_TYPE1, "TEST", RED, FONT_32)
-                    delay(200)
-                    showTextOnDisplay(RECT_FULL_DISPLAY_96x48_TYPE1, "TEST", YELLOW, FONT_32)
-                    delay(1300)
-                    clearAll()
-                }
-            }
-            DisplaySize._96x48_TYP2 -> {
-                GlobalScope.launch {
-                    showTextOnDisplay(
-                        RECT_SCORE_LABEL_DISPLAY_96x48_TYPE2,
-                        "TEST",
-                        YELLOW,
-                        FONT_CLASSIC
-                    )
-                    delay(200)
-                    showTextOnDisplay(
-                        RECT_TIME_LABEL_DISPLAY_96x48_TYPE2,
-                        "TEST",
-                        GREEN,
-                        FONT_CLASSIC
-                    )
+                    showTextOnDisplay(R_96x48_FIRST, "CONNECTED", GREEN, FONT_CLASSIC_SMALLER)
+                    delay(50)
+                    showTextOnDisplay(R_96x48_SECOND, "ABCDEFGHIJ", RED, FONT_CLASSIC_SMALLER)
+                    delay(50)
+                    showTextOnDisplay(R_96x48_THIRD, "1234567890", YELLOW, FONT_CLASSIC_SMALLER)
+                    delay(1000)
+                    showTextOnDisplay(R_96x48_FIRST, "TEST TEST TEST", RED, FONT_CLASSIC)
+                    delay(50)
+                    showTextOnDisplay(R_96x48_SECOND, "><–./([{$#@~^", YELLOW, FONT_CLASSIC)
+                    delay(50)
+                    showTextOnDisplay(R_96x48_THIRD, "&*%;'>_+|§])}", GREEN, FONT_CLASSIC)
                     delay(1000)
                     clearAll()
                 }
             }
+
         }
 
     }
@@ -600,15 +534,9 @@ class ExternalDisplayService {
                 clearDisplay(RECT_LEFT_DISPLAY_96x16)
             }
             DisplaySize._96x48_TYP1 -> {
-                /*clearDisplay(RECT_LEFT_DISPLAY_96x48_TYPE1)
-                clearDisplay(RECT_SCORE_DISPLAY_96x48_TYPE1)
-                clearDisplay(RECT_TIME_DISPLAY_96x48_TYPE1)
-                clearDisplay(RECT_FULL_DISPLAY_96x48_TYPE1)*/
-            }
-            DisplaySize._96x48_TYP2 -> {
-                clearDisplay(RECT_SCORE_LABEL_DISPLAY_96x48_TYPE2)
-                clearDisplay(RECT_TIME_LABEL_DISPLAY_96x48_TYPE2)
-
+                clearDisplay(R_96x48_FIRST)
+                clearDisplay(R_96x48_SECOND)
+                clearDisplay(R_96x48_THIRD)
             }
         }
 
