@@ -31,7 +31,8 @@ dependencies {
     implementation(files("libs/usb4java-javax-1.3.0.jar"))
     implementation(files("libs/usb-api-1.0.2.jar"))
     implementation(files("libs/bluecove-2.1.0.jar"))
-    implementation("net.sf.bluecove:bluecove-gpl:2.1.0")
+    implementation(files("target/bluecove-gpl-2.1.1-SNAPSHOT.jar"))
+
 
     if(org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_MAC)){
         implementation(files("libs/libusb4java-1.3.0-darwin-x86-64.jar"))
