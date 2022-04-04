@@ -47,7 +47,7 @@ fun App() {
 
 fun main(strings : Array<String>) {
 
-    val noRemote = false
+    val noRemote = true
 
     return application {
         Service.initialize()
