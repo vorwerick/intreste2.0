@@ -3,3 +3,4 @@ Type=Application
 Name=Intreste
 Exec=sudo /home/pi/intreste2.0/run.sh
 Comment=Intreste start
+Terminal=true
