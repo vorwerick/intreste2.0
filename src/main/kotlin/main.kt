@@ -91,6 +91,7 @@ fun main(strings : Array<String>) {
                                 StatusMessage.Level.INFO,
                                 6000L
                             )
+                            delay(2000)
                             Service.gameService.startGameProcess(
                                 GameObject(
                                     "Zasahni co nejvic",
