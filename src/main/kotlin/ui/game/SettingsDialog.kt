@@ -54,7 +54,7 @@ fun SettingsDialog(onDismiss: () -> Unit, onPositive: () -> Unit) {
                 Column {
 
                     Text("Počet připojených senzorů " + Service.moduleSensorService.sensors.size.toString())
-                    Text("Version Intreste 2.0-alpha")
+                    Text("Version Intreste 2.0.1 build 10")
 
                     TextField(
                         value = ledAddress.value.toString(),
