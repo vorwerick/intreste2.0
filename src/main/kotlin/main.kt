@@ -23,6 +23,7 @@ import service.serial.ModuleCommunicationService
 import service.serial.protocol.Commands
 import ui.HomeScreen
 import ui.game.GameScreen
+import utils.Log
 import java.awt.Dimension
 import java.awt.Toolkit
 
@@ -91,14 +92,16 @@ fun main(strings : Array<String>) {
                                 StatusMessage.Level.INFO,
                                 6000L
                             )
-                            delay(2000)
-                            Service.gameService.startGameProcess(
-                                GameObject(
-                                    "Zasahni co nejvic",
-                                    "",
-                                    GameObject.Type.CLASSIC_RANDOM_TIMEOUT, GameObject.Rules(0, 0, 2, 2, 1),
+                            if(sensorIds.size == sortedPanels.size){
+                                Log.info(Log.MessageGroup.SYSTEM, "Starting game")
+                                Service.gameService.startGameProcess(
+                                    GameObject(
+                                        "Zasahni co nejvic",
+                                        "",
+                                        GameObject.Type.CLASSIC_RANDOM_TIMEOUT, GameObject.Rules(0, 0, 2, 2, 1),
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }

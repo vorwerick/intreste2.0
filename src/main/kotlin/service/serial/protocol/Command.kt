@@ -245,7 +245,7 @@ class Commands {
                     return SensorHit(command.data[3].toInt())
                 }
                 else -> {
-                    Log.debug(Log.MessageGroup.SYSTEM,"Unrecognized command:: ${command.data.toHexString()}")
+                  //  Log.debug(Log.MessageGroup.SYSTEM,"Unrecognized command:: ${command.data.toHexString()}")
                 }
             }
             return null
