@@ -91,13 +91,13 @@ fun main(strings : Array<String>) {
                                 StatusMessage.Level.INFO,
                                 6000L
                             )
-                            /**Service.gameService.startGameProcess(
+                            Service.gameService.startGameProcess(
                                 GameObject(
                                     "Zasahni co nejvic",
                                     "",
                                     GameObject.Type.CLASSIC_RANDOM_TIMEOUT, GameObject.Rules(0, 0, 2, 2, 1),
                                 )
-                            ) */
+                            )
                         }
                     }
                 }
