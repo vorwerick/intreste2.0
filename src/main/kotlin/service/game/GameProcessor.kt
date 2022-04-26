@@ -75,17 +75,19 @@ class GameProcessor() {
         Service.remoteMasterService.sendCurrentGameInfo(gameState, gameObject, gameStatus)
         Service.moduleCommunicationService.startSensorDetecting()
         Service.moduleCommunicationService.addSensorBlowListener(sensorBlowForIdleStateListener)
-        Service.moduleCommunicationService.playAnimationAllPanels(
-            ModuleCommunicationService.ANIM_ID_BREATHING,
-            Commands.PanelColor.PURPLE,
-            5,
-            255.toByte()
-        )
 
         GlobalScope.launch {
             Service.externalDisplayService.clearAll()
             delay(100)
             Service.externalDisplayService.updateFullMessage("READY", ExternalDisplayService.GREEN)
+            Service.moduleCommunicationService.stopAllAnimations()
+            delay(300)
+            Service.moduleCommunicationService.playAnimationAllPanels(
+                ModuleCommunicationService.ANIM_ID_BREATHING,
+                Commands.PanelColor.PURPLE,
+                5,
+                255.toByte()
+            )
         }
 
         Service.gameService.gameProcessListener?.onGamePrepared(gameObject)

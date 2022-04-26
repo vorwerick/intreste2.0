@@ -40,5 +40,5 @@ object Constants {
 
     const val ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION"
 
-    const val NONBLOCKING_CYCLE_DELAY = 5L
+    const val NONBLOCKING_CYCLE_DELAY = 10L
 }

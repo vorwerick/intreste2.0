@@ -71,7 +71,7 @@ class ExternalDisplayService {
         const val FONT_SMALL = "F0"
     }
 
-    private val lcdDisplayListeners = mutableListOf<LCDDisplayListener>()
+    private var lcdDisplayListener: LCDDisplayListener? = null
 
     private var executor: ExecutorService = Executors.newFixedThreadPool(2)
 
@@ -317,7 +317,7 @@ class ExternalDisplayService {
                     ), 5000
                 )
                 Log.info(Log.MessageGroup.HW, "Connected to LCD display")
-                Service.settingsService.lcdDisplayConnected = true
+
                 Thread.sleep(100)
                 defineDisplays()
                 Thread.sleep(100)
@@ -325,7 +325,8 @@ class ExternalDisplayService {
                 Thread.sleep(100)
                 testDisplay()
                 mainThread {
-                    lcdDisplayListeners.forEach { it.onLCDDisplayConnected() }
+                    Service.settingsService.lcdDisplayConnected = true
+                   lcdDisplayListener?.onLCDDisplayConnected()
                 }
             } catch (e: IOException) {
                 Log.error(Log.MessageGroup.HW, e.message)
@@ -347,9 +348,9 @@ class ExternalDisplayService {
         client?.close()
         client = null
         Log.info(Log.MessageGroup.HW, "Disconnected from LCD display")
-        Service.settingsService.lcdDisplayConnected = false
         mainThread {
-            lcdDisplayListeners.forEach { it.onLCDDisplayDisconnected(reason) }
+            Service.settingsService.lcdDisplayConnected = false
+            lcdDisplayListener?.onLCDDisplayDisconnected(reason)
         }
     }
 
@@ -393,7 +394,7 @@ class ExternalDisplayService {
                     delay(50)
                     showTextOnDisplay(R_96x48_THIRD, "1234567890", YELLOW, FONT_CLASSIC_SMALLER)
                     delay(1000)
-                    showTextOnDisplay(R_96x48_FIRST, "TEST TEST TEST", RED, FONT_CLASSIC)
+                    showTextOnDisplay(R_96x48_FIRST, "TESTTESTTEST", RED, FONT_CLASSIC)
                     delay(50)
                     showTextOnDisplay(R_96x48_SECOND, "><–./([{$#@~^", YELLOW, FONT_CLASSIC)
                     delay(50)
@@ -516,12 +517,8 @@ class ExternalDisplayService {
         return bytes
     }
 
-    fun addLCDDisplayListener(lcdDisplayListener: LCDDisplayListener) {
-        lcdDisplayListeners.add(lcdDisplayListener)
-    }
-
-    fun removeLCDDisplayListener(lcdDisplayListener: LCDDisplayListener) {
-        lcdDisplayListeners.remove(lcdDisplayListener)
+    fun setLCDDisplayListener(lcdDisplayListener: LCDDisplayListener?) {
+        this.lcdDisplayListener = lcdDisplayListener
     }
 
     fun clearAll() {

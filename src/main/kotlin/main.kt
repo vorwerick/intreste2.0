@@ -56,10 +56,18 @@ fun main(strings : Array<String>) {
         if(!noRemote){
             Service.remoteMasterService.start()
         }
-        Service.moduleCommunicationService.connect()
-        Service.externalDisplayService.connect(Service.settingsService.lcdDisplayAddress, Service.settingsService.lcdDisplayPort)
-        GlobalScope.launch {
 
+        GlobalScope.launch(Dispatchers.Main) {
+            delay(1500)
+            while (true){
+                if(Service.moduleCommunicationService.connect()){
+                    break;
+                }
+                delay(1500)
+                StatusMessage.show(9999, "USB module is not connected!",StatusMessage.Level.WARNING);
+            }
+
+            Service.externalDisplayService.connect(Service.settingsService.lcdDisplayAddress, Service.settingsService.lcdDisplayPort)
             delay(1000)
             Service.moduleCommunicationService.listSensors()
 

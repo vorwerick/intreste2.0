@@ -53,8 +53,12 @@ class ModuleCommunicationService : CommunicationListener {
         communication = SerialCommunicationService(this)
 
         communication?.initialize()
-        communication?.connect()
-        return true
+        return try{
+            communication?.connect()
+            true
+        } catch (e: NotFoundSerialDeviceException){
+            false
+        }
     }
 
     fun disconnect() {

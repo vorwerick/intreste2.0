@@ -1,4 +1,5 @@
 object Config {
+
     const val MODULE_PRODUCT_ID: Short = 14155
     const val BAUD_RATE: Int = 115200
 
@@ -7,5 +8,5 @@ object Config {
 
     const val COMMAND_BYTE_ARRAY_SIZE: Int = 1024
 
-    const val WRITE_SAFE_DELAY = 10L
+    const val WRITE_SAFE_DELAY = 20L
 }

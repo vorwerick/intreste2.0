@@ -1,27 +1,21 @@
 package ui.game
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import service.hw.ModuleSensorService
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import service.game.data.GameObject
-import service.hw.Panel
 import service.led.LCDDisplayListener
-import utils.Constants
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SettingsDialog(onDismiss: () -> Unit, onPositive: () -> Unit) {
 
-    val ledAddress = rememberSaveable { mutableStateOf<String>(Service.settingsService.lcdDisplayAddress) }
-    val ledPort = rememberSaveable { mutableStateOf<String>(Service.settingsService.lcdDisplayPort.toString()) }
-    val brightness = rememberSaveable { mutableStateOf<Int>(Service.settingsService.brightness) }
-    val threshold = rememberSaveable { mutableStateOf<Int>(Service.settingsService.threshold) }
+    val ledAddress = rememberSaveable { mutableStateOf(Service.settingsService.lcdDisplayAddress) }
+    val ledPort = rememberSaveable { mutableStateOf(Service.settingsService.lcdDisplayPort.toString()) }
+    val brightness = rememberSaveable { mutableStateOf(Service.settingsService.brightness) }
+    val threshold = rememberSaveable { mutableStateOf(Service.settingsService.threshold) }
 
     val lcdIsConnected = rememberSaveable { mutableStateOf(Service.settingsService.lcdDisplayConnected) }
     DisposableEffect("Settings-disposable-effect") {
@@ -35,9 +29,9 @@ fun SettingsDialog(onDismiss: () -> Unit, onPositive: () -> Unit) {
             }
 
         }
-        Service.externalDisplayService.addLCDDisplayListener(lcdDisplayListener)
+        Service.externalDisplayService.setLCDDisplayListener(lcdDisplayListener)
         onDispose {
-            Service.externalDisplayService.removeLCDDisplayListener(lcdDisplayListener)
+            Service.externalDisplayService.setLCDDisplayListener(null)
         }
     }
 
@@ -46,7 +40,7 @@ fun SettingsDialog(onDismiss: () -> Unit, onPositive: () -> Unit) {
     AlertDialog(
         onDismissRequest = {},
         title = {
-            Text(text = "Settings")
+            Text(text = "Nastavení")
         },
 
         text = {
@@ -54,7 +48,7 @@ fun SettingsDialog(onDismiss: () -> Unit, onPositive: () -> Unit) {
                 Column {
 
                     Text("Počet připojených senzorů " + Service.moduleSensorService.sensors.size.toString())
-                    Text("Version Intreste 2.0.1 build 10")
+                    Text("Version Intreste ${Build.VERSION_NAME} build ${Build.VERSION_NUMBER}")
 
                     TextField(
                         value = ledAddress.value.toString(),
@@ -85,6 +79,9 @@ fun SettingsDialog(onDismiss: () -> Unit, onPositive: () -> Unit) {
                     Button(onClick = { Service.externalDisplayService.testDisplay() }, enabled = lcdIsConnected.value) {
                         Text("LED Display test")
                     }
+                    /** Button(onClick = { Service.externalDisplayService.testDisplay() }, enabled = lcdIsConnected.value) {
+                        Text("Update")
+                    } */
                     /**Box {
                     Slider(1f, onValueChange = {}, Modifier.background(Color.Cyan)) //brightness
 
