@@ -133,7 +133,7 @@ class SerialCommunicationService(private val communicationListener: Communicatio
                     val payload = writeQueue.take()
                     outputStream.write(payload, 0, payload.size)
 
-                    Log.debug(this.javaClass.name, "Message sent: " + payload.toHexString())
+                    //Log.debug(this.javaClass.name, "Message sent: " + payload.toHexString())
                 } catch (e: IOException) {
                     communicationListener.onConnectionLost()
                     Log.warn(this.javaClass.name, e.message)

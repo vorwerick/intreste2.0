@@ -77,6 +77,8 @@ class ModuleCommunicationService : CommunicationListener {
     }
 
     fun startSensorDetecting() {
+        Log.info(this.javaClass.name, "Sensor detecting started")
+
         GlobalScope.launch {
             communication!!.sendMessage(
                 Commands.SetConfiguration(
@@ -96,6 +98,8 @@ class ModuleCommunicationService : CommunicationListener {
     }
 
     fun stopSensorDetecting() {
+        Log.info(this.javaClass.name, "Sensor detecting stopped")
+
         communication!!.sendMessage(Commands.Stop())
     }
 
