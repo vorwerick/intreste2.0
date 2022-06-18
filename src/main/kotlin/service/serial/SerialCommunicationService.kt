@@ -55,9 +55,13 @@ class SerialCommunicationService(private val communicationListener: Communicatio
         }
         val services = UsbHostManager.getUsbServices()
         val device = findUsbDeviceById(services.rootUsbHub, Config.MODULE_PRODUCT_ID)
+        Log.info(this.javaClass.name, "Found USB device " + device?.productString)
+
         val result =
             SerialPort.getCommPorts().firstOrNull { serialPort -> serialPort.portDescription == device?.productString }
                 ?: throw NotFoundSerialDeviceException()
+
+        Log.info(this.javaClass.name, "Starting communication")
 
         startCommunication(result)
     }
@@ -75,6 +79,8 @@ class SerialCommunicationService(private val communicationListener: Communicatio
         serialPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0)
         serialPort.setComPortParameters(Config.BAUD_RATE, 8, 1, SerialPort.NO_PARITY)
         serialPort.openPort(300)
+
+        Log.info(this.javaClass.name, "Starting tasks")
 
         startReadTask(serialPort)
         startWriteThread(serialPort)

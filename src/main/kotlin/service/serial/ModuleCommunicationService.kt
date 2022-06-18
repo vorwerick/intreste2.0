@@ -48,13 +48,10 @@ class ModuleCommunicationService : CommunicationListener {
         Log.info(this.javaClass.name, "Communication starting")
 
         communication = SerialCommunicationService(this)
-        Log.info(this.javaClass.name, "Serial communication service is created")
 
         communication?.initialize()
-        Log.info(this.javaClass.name, "Communication was initialized")
 
         return try {
-            Log.info(this.javaClass.name, "Connecting to serial communication Intreste module")
             communication?.connect()
 
 
