@@ -27,7 +27,7 @@ class Log {
     }
 
     fun initialize() {
-        val dir = File(Constants.INTRESTE_APP_FILEPATH)
+        val dir = File(System.getProperty("user.home") + File.separator + "logs")
         if (!dir.exists()) {
             dir.mkdir()
         }
