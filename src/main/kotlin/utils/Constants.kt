@@ -8,7 +8,7 @@ object Constants {
     const val BLUETOOTH_UUID = "ef9e24b8-5981-41d6-9f76-419c16a8df51"
     const val BLUETOOTH_NAME = "Intreste"
     val DEFAULT_LCD_DISPLAY_SIZE = ExternalDisplayService.DisplaySize._96x16
-    const val INTRESTE_APP_FILEPATH = "/storage/emulated/0/intreste/"
+    const val INTRESTE_APP_FILEPATH = "/home/pi/logs"
     const val READY_COUNTDOWN = 4
     const val RESULTS_IDLE_TIME = 20
     const val DEFAULT_GAME_TIMEOUT = 60

@@ -2,7 +2,6 @@ package service.serial
 
 
 import utils.Constants
-import utils.mainThread
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -15,7 +14,7 @@ import utils.Log
 class ModuleCommunicationService : CommunicationListener {
 
     init {
-        Log.info(Log.MessageGroup.SYSTEM, "Module communication service init")
+        Log.info(this.javaClass.name, "Module comunication service was initialized")
     }
 
     interface ConnectionListener {
@@ -46,39 +45,31 @@ class ModuleCommunicationService : CommunicationListener {
     private var communication: SerialCommunicationService? = null
 
     fun connect(): Boolean {
-        Log.info(
-            Log.MessageGroup.API,
-            " COMMAND | Connect to unknown device")
-
         communication = SerialCommunicationService(this)
 
         communication?.initialize()
-        return try{
+        return try {
             communication?.connect()
             true
-        } catch (e: NotFoundSerialDeviceException){
+        } catch (e: NotFoundSerialDeviceException) {
             false
         }
     }
 
     fun disconnect() {
         stopSensorDetecting()
-        Log.info(Log.MessageGroup.SYSTEM, " COMMAND | Disconnect")
         communication!!.interrupt()
     }
 
     fun getVersion(response: (version: String) -> Unit) {
-        Log.info(Log.MessageGroup.API, " REQUEST | Get version")
         communication!!.sendMessage(Commands.GetVersion())
     }
 
     fun getFirmwareVersion(sensor: Byte) {
-        Log.info(Log.MessageGroup.API, " REQUEST | Get firmware version")
         communication!!.sendMessage(Commands.GetFirmwareVersion(sensor))
     }
 
     fun startSensorDetecting() {
-        Log.info(Log.MessageGroup.API, " REQUEST | Start sensor hit detecting")
         GlobalScope.launch {
             communication!!.sendMessage(
                 Commands.SetConfiguration(
@@ -98,21 +89,15 @@ class ModuleCommunicationService : CommunicationListener {
     }
 
     fun stopSensorDetecting() {
-        Log.info(Log.MessageGroup.API, " REQUEST | Stop sensor hit detecting")
         communication!!.sendMessage(Commands.Stop())
     }
 
     fun listSensors() {
-        Log.info(Log.MessageGroup.API, " REQUEST | List sensors")
         communication!!.sendMessage(Commands.ListSensors())
     }
 
     fun stopAllAnimations() {
         val panelsCount = Service.moduleSensorService.sensors.size + 1
-        Log.info(
-            Log.MessageGroup.API,
-            " REQUEST | Stop all animations [animationId: 0, color: 00 00 00, brightness: 0, duration: 10, repeat: 1]"
-        )
         communication!!.sendMessage(
             Commands.ShowAnimation(
                 panelsCount.toByte(), 0, Commands.PanelColor.BLACK, 0,
@@ -130,10 +115,6 @@ class ModuleCommunicationService : CommunicationListener {
     ) {
         val panelsCount = Service.moduleSensorService.sensors.size + 1
         val brightness = Service.settingsService.brightness
-        Log.info(
-            Log.MessageGroup.API,
-            " REQUEST | Play animation on all panels [panelsCount: $panelsCount, animationId: $animationId, color: ${color.toString()}, brightness: ${brightness.toByte()}, duration: $duration, repeat: $repeat]"
-        )
         communication!!.sendMessage(
             Commands.ShowAnimation(
                 panelsCount.toByte(), animationId.toByte(), color, brightness.toByte(),
@@ -151,7 +132,6 @@ class ModuleCommunicationService : CommunicationListener {
         repeat: Int
     ) {
         val brightness = Service.settingsService.brightness
-        Log.info(Log.MessageGroup.API, " REQUEST | Play animation")
         communication!!.sendMessage(
             Commands.ShowAnimation(
                 panelId.toByte(), animationId.toByte(), color, brightness.toByte(),
@@ -167,11 +147,6 @@ class ModuleCommunicationService : CommunicationListener {
     ) {
         val brightness = Service.settingsService.brightness
         val panelsCount = Service.moduleSensorService.sensors.size + 1
-        Log.info(
-            Log.MessageGroup.API,
-            " REQUEST | Emit light on all panels [color: ${color.toString()}, brightness: ${brightness.toByte()}, duration: $duration]"
-        )
-
         communication!!.sendMessage(
             Commands.LightUpLED(
                 panelsCount.toByte(),
@@ -189,10 +164,6 @@ class ModuleCommunicationService : CommunicationListener {
         duration: Int
     ) {
         val brightness = Service.settingsService.brightness
-        Log.info(
-            Log.MessageGroup.API,
-            " REQUEST | Emit light [sensor: $panelId, color: ${color.toString()}, brightness: ${brightness.toByte()}), duration: $duration]"
-        )
         communication!!.sendMessage(
             Commands.LightUpLED(
                 panelId.toByte(),
@@ -205,91 +176,74 @@ class ModuleCommunicationService : CommunicationListener {
     }
 
     override fun onCommandReceived(command: Command?) {
-        Log.info(
-            Log.MessageGroup.API,
-            "RESPONSE reveived " + command.toString()
-        )
-        if (command == null) {
-            return
-        }
-        when (command) {
-            /*is Commands.Data -> {
-                command.sensors.forEachIndexed { index, sensor ->
-                    senso.forEach { listener ->
-                        mainThread {
-                            listener.onSe(
-                                index,
-                                sensor.data,
-                                sensor.treshold
-                            )
-                        }
-                    }
-                }
-            }*/
-            is Commands.SensorHit -> {
-                Log.info(
-                    Log.MessageGroup.API,
-                    "RESPONSE | Sensor hit [sensor: ${command.value}]"
-                )
-
-                mainThread {
-                    synchronized(sensorListeners){
-                        sensorListeners.forEach { listener ->
-                            listener.onSensorHit(
-                                command.value
-                            )
-                        }
-
-                        sensorHitListeners.forEach { listener ->
-                            listener.onSensorBlow(
-                                command.value
-                            )
-                        }
-                    }
-                }
-
+        synchronized(sensorListeners) {
+            if (command == null) {
+                return
             }
-            is Commands.SensorList -> {
-                val sensors = command.sensors.joinToString(", ")
-                Log.info(
-                    Log.MessageGroup.API,
-                    "RESPONSE | List sensors [sensor ids: $sensors]"
-                )
-                mainThread {
+            when (command) {
+                /*is Commands.Data -> {
+                    command.sensors.forEachIndexed { index, sensor ->
+                        senso.forEach { listener ->
+                             synchronized(connectionListeners) {
+                                listener.onSe(
+                                    index,
+                                    sensor.data,
+                                    sensor.treshold
+                                )
+                            }
+                        }
+                    }
+                }*/
+                is Commands.SensorHit -> {
+                    sensorListeners.forEach { listener ->
+                        listener.onSensorHit(
+                            command.value
+                        )
+                    }
+
+                    sensorHitListeners.forEach { listener ->
+                        listener.onSensorBlow(
+                            command.value
+                        )
+                    }
+
+                }
+                is Commands.SensorList -> {
+                    val sensors = command.sensors.joinToString(", ")
                     sensorListeners.forEach { listener ->
                         listener.onListSensorIds(
                             command.sensors
                         )
                     }
                 }
-            }
-            is Commands.GetVersion -> {
+                is Commands.GetVersion -> {
+
+                }
 
             }
-
         }
     }
 
     override fun onConnectionLost() {
-        mainThread {
+        synchronized(connectionListeners) {
             connectionListeners.forEach { listener -> listener.onConnectionLost() }
         }
     }
 
     override fun onCommunicationError(desc: String) {
-        mainThread {
+        synchronized(connectionListeners) {
             connectionListeners.forEach { listener -> listener.onConnectionLost() }
         }
     }
 
     override fun onConnected() {
-        mainThread {
+        synchronized(connectionListeners) {
             connectionListeners.forEach { listener -> listener.onConnected() }
         }
     }
 
     override fun onDataRateSpeed(incomingDataCount: Int, outgoingDataCount: Int) {
-        mainThread {
+        synchronized(connectionListeners) {
             connectionListeners.forEach { listener ->
                 listener.onDataRateSpeed(
                     incomingDataCount,
@@ -325,10 +279,6 @@ class ModuleCommunicationService : CommunicationListener {
 
     fun lightOffAllPanels() {
         val panelsCount = Service.moduleSensorService.sensors.size + 1
-        Log.info(
-            Log.MessageGroup.API,
-            " REQUEST | Turn off light on all panels"
-        )
 
         communication!!.sendMessage(
             Commands.LightUpLED(
@@ -342,10 +292,6 @@ class ModuleCommunicationService : CommunicationListener {
     }
 
     fun lightOffPanel(sensorIndex: Int) {
-        Log.info(
-            Log.MessageGroup.API,
-            " REQUEST | Turn off light "
-        )
         communication!!.sendMessage(
             Commands.LightUpLED(
                 sensorIndex.toByte(),

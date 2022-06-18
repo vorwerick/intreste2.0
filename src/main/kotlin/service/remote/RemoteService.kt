@@ -17,7 +17,7 @@ class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionL
     private var remoteCommunicationListener: RemoteCommunicationListener? = null
 
     init {
-        Log.info(Log.MessageGroup.SYSTEM, "Remote service init")
+        Log.info(this.javaClass.name, "Remote service init")
     }
 
     fun start(): Boolean {

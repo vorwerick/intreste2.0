@@ -79,7 +79,7 @@ object MessageResolver {
 
         if (count >= dest.size) {
             Log.error(
-                Log.MessageGroup.SYSTEM,
+                this.javaClass.name,
                 "Index " + count + " is higher than array " + dest.size + " - skipping command -> " + dest.toHexString()
             )
             return -10

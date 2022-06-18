@@ -15,7 +15,7 @@ import java.util.concurrent.Executors
 class ExternalDisplayService {
 
     init {
-        Log.info(Log.MessageGroup.SYSTEM, "External display service init")
+        Log.info(this.javaClass.name, "External display service init")
     }
 
     enum class DisplaySize {
@@ -316,7 +316,7 @@ class ExternalDisplayService {
                         port
                     ), 5000
                 )
-                Log.info(Log.MessageGroup.HW, "Connected to LCD display")
+                Log.info(this.javaClass.name, "Connected to LCD display")
 
                 Thread.sleep(100)
                 defineDisplays()
@@ -329,7 +329,7 @@ class ExternalDisplayService {
                    lcdDisplayListener?.onLCDDisplayConnected()
                 }
             } catch (e: IOException) {
-                Log.error(Log.MessageGroup.HW, e.message)
+                Log.error(this.javaClass.name, e.message)
                 e.message?.let { disconnect(it) }
             }
         }
@@ -343,11 +343,11 @@ class ExternalDisplayService {
             val outputStream = client?.getOutputStream()
             outputStream?.close()
         } catch (e: IOException) {
-            Log.error(Log.MessageGroup.HW, e.message)
+            Log.error(this.javaClass.name, e.message)
         }
         client?.close()
         client = null
-        Log.info(Log.MessageGroup.HW, "Disconnected from LCD display")
+        Log.info(this.javaClass.name, "Disconnected from LCD display")
         mainThread {
             Service.settingsService.lcdDisplayConnected = false
             lcdDisplayListener?.onLCDDisplayDisconnected(reason)
@@ -470,10 +470,10 @@ class ExternalDisplayService {
 
     private fun sendData(data: ByteArray) {
         if (client == null) {
-            Log.warn(Log.MessageGroup.HW, "Cannot send LCD display message, not connected")
+            Log.warn(this.javaClass.name, "Cannot send LCD display message, not connected")
             return
         }
-        Log.debug(Log.MessageGroup.HW, "LED display message: $data")
+        Log.debug(this.javaClass.name, "LED display message: $data")
         try {
             executor.submit {
                 val outputStream = client?.getOutputStream()
@@ -481,7 +481,7 @@ class ExternalDisplayService {
                 outputStream?.flush()
             }
         } catch (e: IOException) {
-            Log.error(Log.MessageGroup.HW, e.message)
+            Log.error(this.javaClass.name, e.message)
             e.message?.let { disconnect(it) }
         }
     }

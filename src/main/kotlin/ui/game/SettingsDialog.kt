@@ -64,7 +64,7 @@ fun SettingsDialog(onDismiss: () -> Unit, onPositive: () -> Unit) {
                         },
                         label = { Text("LED display port") }
                     )
-                    Button(onClick = {}) {
+                    Button(onClick = {
                         if (lcdIsConnected.value) {
                             Service.externalDisplayService.disconnect("")
                         } else {
@@ -73,6 +73,7 @@ fun SettingsDialog(onDismiss: () -> Unit, onPositive: () -> Unit) {
                                 ledPort.value.toInt()
                             )
                         }
+                    }) {
                         val text = if (lcdIsConnected.value) "LED Display disconnect" else "LED Display connect"
                         Text(text)
                     }
@@ -80,7 +81,7 @@ fun SettingsDialog(onDismiss: () -> Unit, onPositive: () -> Unit) {
                         Text("LED Display test")
                     }
                     /** Button(onClick = { Service.externalDisplayService.testDisplay() }, enabled = lcdIsConnected.value) {
-                        Text("Update")
+                    Text("Update")
                     } */
                     /**Box {
                     Slider(1f, onValueChange = {}, Modifier.background(Color.Cyan)) //brightness

@@ -79,7 +79,7 @@ class SerialCommunicationService(private val communicationListener: Communicatio
         startReadTask(serialPort)
         startWriteThread(serialPort)
         isConnected = true
-        communicationListener?.onConnected()
+        communicationListener.onConnected()
     }
 
     private fun startReadTask(serialPort: SerialPort): Thread {
@@ -123,16 +123,16 @@ class SerialCommunicationService(private val communicationListener: Communicatio
                     val payload = writeQueue.take()
                     outputStream.write(payload, 0, payload.size)
 
-                    Log.debug(Log.MessageGroup.HW, "Message sent: " + payload.toHexString())
+                    Log.debug(this.javaClass.name, "Message sent: " + payload.toHexString())
                 } catch (e: IOException) {
-                    communicationListener?.onConnectionLost()
-                    Log.warn(Log.MessageGroup.HW, e.message)
-                    communicationListener?.onCommunicationError(e.message ?: "unknow error")
-                    Log.warn(Log.MessageGroup.HW, e.message)
+                    communicationListener.onConnectionLost()
+                    Log.warn(this.javaClass.name, e.message)
+                    communicationListener.onCommunicationError(e.message ?: "unknow error")
+                    Log.warn(this.javaClass.name, e.message)
                     break
                 } catch (e: InterruptedException) {
-                    communicationListener?.onConnectionLost()
-                    Log.warn(Log.MessageGroup.HW, e.message)
+                    communicationListener.onConnectionLost()
+                    Log.warn(this.javaClass.name, e.message)
                     break
                 }
             }

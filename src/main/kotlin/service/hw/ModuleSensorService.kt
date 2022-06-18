@@ -11,7 +11,7 @@ import utils.Log
 class ModuleSensorService : ModuleCommunicationService.SensorListener {
 
     init {
-        Log.info(Log.MessageGroup.SYSTEM, "Module sensor service init")
+        Log.info(this.javaClass.name, "Module sensor service init")
     }
 
     interface PanelSortingListener {
@@ -111,7 +111,7 @@ class ModuleSensorService : ModuleCommunicationService.SensorListener {
         mainThread { panelSortingListener?.onSortingProgress(index + 1, sensors.size) }
 
         Log.info(
-            Log.MessageGroup.PANEL,
+            this.javaClass.name,
             "Panel $index assigned to sensor $sensorIndex"
         )
 
@@ -130,7 +130,7 @@ class ModuleSensorService : ModuleCommunicationService.SensorListener {
                 }
             }
 
-            Log.info(Log.MessageGroup.PANEL, "Panel configuration finished")
+            Log.info(this.javaClass.name, "Panel configuration finished")
         }
     }
 
@@ -146,7 +146,7 @@ class ModuleSensorService : ModuleCommunicationService.SensorListener {
                 Int.MAX_VALUE
             )
 
-            Log.info(Log.MessageGroup.PANEL, "Panel sorting started")
+            Log.info(this.javaClass.name, "Panel sorting started")
             waitingForSensors = false
 
             mainThread {

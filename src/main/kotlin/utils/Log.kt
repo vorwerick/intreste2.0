@@ -19,15 +19,11 @@ class Log {
         val timestamp: Instant,
         val text: String,
         val level: MessageLevel,
-        val group: MessageGroup
+        val className: String,
     )
 
     enum class MessageLevel {
         DEBUG, INFO, WARN, ERROR,
-    }
-
-    enum class MessageGroup {
-        API, HW, CRASH, UI, SYSTEM, GAME, PANEL, UNKNOWN
     }
 
     fun initialize() {
@@ -37,7 +33,7 @@ class Log {
         }
         val newFile = File(
             dir, "log-" + DateTimeFormatter
-                .ofPattern("dd-MM-HH-mm-ss")
+                .ofPattern("HHmm-ddMMyy")
                 .withZone(ZoneOffset.UTC)
                 .format(Instant.now()) + ".txt"
         )
@@ -56,20 +52,20 @@ class Log {
     companion object {
         val instance = Log()
 
-        public fun debug(group: MessageGroup, message: String?) {
-            instance.logMessage(group, message, MessageLevel.DEBUG)
+        public fun debug(className: String, message: String?) {
+            instance.logMessage(className, message, MessageLevel.DEBUG)
         }
 
-        public fun info(group: MessageGroup, message: String?) {
-            instance.logMessage(group, message, MessageLevel.INFO)
+        public fun info(className: String, message: String?) {
+            instance.logMessage(className, message, MessageLevel.INFO)
         }
 
-        public fun warn(group: MessageGroup, message: String?) {
-            instance.logMessage(group, message, MessageLevel.WARN)
+        public fun warn(className: String, message: String?) {
+            instance.logMessage(className, message, MessageLevel.WARN)
         }
 
-        public fun error(group: MessageGroup, message: String?) {
-            instance.logMessage(group, message, MessageLevel.ERROR)
+        public fun error(className: String, message: String?) {
+            instance.logMessage(className, message, MessageLevel.ERROR)
         }
     }
 
@@ -87,14 +83,13 @@ class Log {
         listeners.remove(listener)
     }
 
-    private fun logMessage(group: MessageGroup, text: String?, level: MessageLevel) {
-
+    private fun logMessage(className: String, text: String?, level: MessageLevel) {
 
         if (text == null) {
             return
         }
 
-        val message = Message(Instant.now(), text, level, group)
+        val message = Message(Instant.now(), text, level, className)
         println(message.printString())
         writeToFile(message.printString())
         listeners.forEach {
@@ -107,8 +102,8 @@ class Log {
 
 fun Log.Message.printString(): String {
     return DateTimeFormatter
-        .ofPattern("HH:mm:ss.SSS")
+        .ofPattern("dd/mm/yy HH:mm:ss.SSS")
         .withZone(ZoneOffset.UTC)
-        .format(timestamp) + " " + level.name + "[" + group.name + "] " + text
+        .format(timestamp) + " " + "["+ level.name+  "] "+ className + " > " + text
 }
 

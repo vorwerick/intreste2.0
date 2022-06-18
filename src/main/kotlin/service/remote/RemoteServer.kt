@@ -1,8 +1,6 @@
 package service.remote
 
 import Constants
-import com.intel.bluetooth.BluetoothConnectionAccessAdapter
-import com.intel.bluetooth.BluetoothConsts
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -14,7 +12,6 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.util.*
 import javax.bluetooth.LocalDevice
-import javax.bluetooth.RemoteDevice
 import javax.microedition.io.Connector
 import javax.microedition.io.StreamConnection
 import javax.microedition.io.StreamConnectionNotifier
@@ -58,20 +55,20 @@ class RemoteServer {
     }
 
     private fun acceptConnectionTask(streamConnectionNotifier: StreamConnectionNotifier) {
-        Log.info(Log.MessageGroup.SYSTEM, "Starting accept connection")
+        Log.info(this.javaClass.name, "Starting accept connection")
         try {
             GlobalScope.launch(Dispatchers.IO) {
 
 
                 while (true) {
-                    Log.info(Log.MessageGroup.SYSTEM, "Waiting for client")
+                    Log.info(this.javaClass.name, "Waiting for client")
                     try {
                         streamConnection = streamConnectionNotifier.acceptAndOpen()
                         inputStream = streamConnection!!.openInputStream()
                         outputStream = streamConnection!!.openOutputStream()
 
                         Log.info(
-                            Log.MessageGroup.SYSTEM,
+                            this.javaClass.name,
                             "Client accepted client connected"
                         )
                         changeConnectionStatus(ConnectionStatus.CONNECTED)

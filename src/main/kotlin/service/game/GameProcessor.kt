@@ -12,17 +12,22 @@ import utils.SynchronizedTimer
 import service.serial.protocol.Commands
 import utils.Log
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.locks.Lock
 import kotlin.random.Random
 
 class GameProcessor() {
 
+
     companion object {
-        private val executor = Executors.newFixedThreadPool(2)
+        private val lock = Object()
+        private val executor = Executors.newFixedThreadPool(4)
+        private val scheduledExecutor = Executors.newSingleThreadScheduledExecutor()
+
     }
 
-    @Volatile
-    private var doubleBlow: AtomicBoolean = AtomicBoolean(false)
+    private var doubleBlow: Boolean = false
 
     private val activePanels = mutableListOf<Panel>()
 
@@ -37,26 +42,22 @@ class GameProcessor() {
     private val sensorBlowForIdleStateListener =
         object : ModuleCommunicationService.SensorBlowListener {
             override fun onSensorBlow(sensorIndex: Int) {
-                synchronized(executor) {
-                    if (doubleBlow.get()) {
-                        startUpGame()
-                        doubleBlow.set(false)
-                    }
-                    doubleBlow.set(true)
-                    GlobalScope.launch {
-                        delay(1000L)
-                        doubleBlow.set(false)
-                    }
+                if (doubleBlow) {
+                    startUpGame()
                 }
+                doubleBlow = true
+                scheduledExecutor.schedule({
+                    synchronized(lock) {
+                        doubleBlow = false
+                    }
+                }, 1000L, TimeUnit.MILLISECONDS)
             }
         }
 
     private val gameSensorBlowListener: ModuleCommunicationService.SensorBlowListener =
         object : ModuleCommunicationService.SensorBlowListener {
             override fun onSensorBlow(sensorIndex: Int) {
-                synchronized(this) {
-                    sensorBlow(sensorIndex)
-                }
+                sensorBlow(sensorIndex)
             }
         }
 
@@ -76,12 +77,12 @@ class GameProcessor() {
         Service.moduleCommunicationService.startSensorDetecting()
         Service.moduleCommunicationService.addSensorBlowListener(sensorBlowForIdleStateListener)
 
-        GlobalScope.launch {
+        executor.submit {
             Service.externalDisplayService.clearAll()
-            delay(100)
+            Thread.sleep(100)
             Service.externalDisplayService.updateFullMessage("READY", ExternalDisplayService.GREEN)
             Service.moduleCommunicationService.stopAllAnimations()
-            delay(300)
+            Thread.sleep(300)
             Service.moduleCommunicationService.playAnimationAllPanels(
                 ModuleCommunicationService.ANIM_ID_BREATHING,
                 Commands.PanelColor.PURPLE,
@@ -130,18 +131,23 @@ class GameProcessor() {
                 miss(sensorIndex)
             }
         } else {
-            gameFinished()
+            synchronized(lock){
+                gameFinished()
+            }
         }
     }
 
 
     private fun resultTimeStarted() {
-        Log.info(Log.MessageGroup.GAME, "Game result started")
+        val timeout = 20
+        Log.info(this.javaClass.name, "Game is in result phase, duration " + timeout + "s")
 
         playResultAnimation()
-        endGameTimer.begin(20, onFinished = {
+        endGameTimer.begin(timeout, onFinished = {
             Thread.sleep(500)
-            Service.gameService.startGameProcess(gameObject)
+            synchronized(lock){
+                Service.gameService.startGameProcess(gameObject)
+            }
         })
     }
 
@@ -158,7 +164,7 @@ class GameProcessor() {
     }
 
     private fun gameRunning() {
-        Log.info(Log.MessageGroup.GAME, "Game started")
+        Log.info(this.javaClass.name, "Game was started, now in progress")
 
         activePanels.clear()
         gameState = GameState.PROGRESS
@@ -179,57 +185,60 @@ class GameProcessor() {
             Thread.sleep(20)
             Service.externalDisplayService.updateScore((gameStatus.hitCount * gameObject.configuration.hitPoints) + gameStatus.missCount * gameObject.configuration.missesPoints)
 
-            generateActivePanel(
-                gameObject.rules.maxActivePanels,
-                gameObject.rules.panelsGap
-            )
+            synchronized(lock){
+                generateActivePanel(
+                    gameObject.rules.maxActivePanels,
+                    gameObject.rules.panelsGap
+                )
+            }
 
             progressTimer.begin(
                 gameObject.configuration.timeoutSeconds,
                 { secondsPassed: Int, totalSeconds: Int ->
-                    gameStatus.timeout = totalSeconds - secondsPassed
-                    Service.gameService.gameProcessListener?.onGameTimeStep(gameStatus, gameObject)
-                    Service.externalDisplayService.updateTime(gameStatus.timeout)
+                    synchronized(lock){
+                        gameStatus.timeout = totalSeconds - secondsPassed
+                        Service.gameService.gameProcessListener?.onGameTimeStep(gameStatus, gameObject)
+                        Service.externalDisplayService.updateTime(gameStatus.timeout)
 
-                    Service.remoteMasterService.sendCurrentGameInfo(
-                        gameState,
-                        gameObject,
-                        gameStatus
-                    )
+                        Service.remoteMasterService.sendCurrentGameInfo(
+                            gameState,
+                            gameObject,
+                            gameStatus
+                        )
+                    }
                 },
                 {
                     Thread.sleep(1000)
-                    gameFinished()
+                    synchronized(lock){
+                        gameFinished()
+                    }
                 })
         }
 
     }
 
     private fun gameFinished() {
-        synchronized(this) {
-            gameState = GameState.FINISHED
-            Service.gameService.gameProcessListener?.onGameFinished(gameObject, gameStatus)
-            Service.gameService.gameResultListener?.onGameFinished(gameObject, gameStatus)
+        gameState = GameState.FINISHED
+        Service.gameService.gameProcessListener?.onGameFinished(gameObject, gameStatus)
+        Service.gameService.gameResultListener?.onGameFinished(gameObject, gameStatus)
 
-            GlobalScope.launch {
-                Service.externalDisplayService.stopAnimation()
-                Service.externalDisplayService.clearTime()
-                delay(100)
-                Service.externalDisplayService.showScoreTitle((gameStatus.hitCount * gameObject.configuration.hitPoints) + gameStatus.missCount * gameObject.configuration.missesPoints)
-            }
-            Log.info(Log.MessageGroup.GAME, "Game was finished")
-
-            Service.moduleCommunicationService.removeSensorBlowListener(gameSensorBlowListener)
-            Service.moduleCommunicationService.stopAllAnimations()
-            Service.moduleCommunicationService.stopSensorDetecting()
-            Service.moduleCommunicationService.lightOffAllPanels()
-
-            Service.remoteMasterService.sendCurrentGameInfo(gameState, gameObject, gameStatus)
-
-            activePanels.clear()
-            resultTimeStarted()
-
+        executor.submit {
+            Service.externalDisplayService.stopAnimation()
+            Service.externalDisplayService.clearTime()
+            Thread.sleep(100)
+            Service.externalDisplayService.showScoreTitle((gameStatus.hitCount * gameObject.configuration.hitPoints) + gameStatus.missCount * gameObject.configuration.missesPoints)
         }
+        Log.info(this.javaClass.name, "Game was finished")
+
+        Service.moduleCommunicationService.removeSensorBlowListener(gameSensorBlowListener)
+        Service.moduleCommunicationService.stopAllAnimations()
+        Service.moduleCommunicationService.stopSensorDetecting()
+        Service.moduleCommunicationService.lightOffAllPanels()
+
+        Service.remoteMasterService.sendCurrentGameInfo(gameState, gameObject, gameStatus)
+
+        activePanels.clear()
+        resultTimeStarted()
     }
 
 
@@ -266,61 +275,59 @@ class GameProcessor() {
         panelsGap: Int,
         lastSensorIndex: Int = -1
     ) {
-        synchronized(this) {
-            val panels = Service.moduleSensorService.configuredPanels
-            val gap = if (panels.size / 4 >= panelsGap) panelsGap else 0
-            var panelsCount = activePanels.size
-            val configuredPanelsCount = panels.size
-            val lastIndex =
-                panels.firstOrNull() { panel -> panel.sensorIndex == lastSensorIndex }?.positionIndex
-                    ?: -1
-            val finalMaxActivePanels =
-                if (configuredPanelsCount >= maxActivePanels) maxActivePanels else configuredPanelsCount
-            while (panelsCount < finalMaxActivePanels) {
-                val claimedIndexes = mutableListOf<Int>()
-                if (lastIndex != -1) {
-                    claimedIndexes.add(lastIndex)
-                }
-                activePanels.forEach {
-                    val index = it.positionIndex
-                    if (gap > 0) {
-                        claimedIndexes.add(index)
-                        for (i in 1..gap) {
-                            var indexWithGap = index + i
-                            if (indexWithGap >= panelsCount) {
-                                indexWithGap -= panelsCount
-                            }
-                            claimedIndexes.add(indexWithGap)
+        val panels = Service.moduleSensorService.configuredPanels
+        val gap = if (panels.size / 4 >= panelsGap) panelsGap else 0
+        var panelsCount = activePanels.size
+        val configuredPanelsCount = panels.size
+        val lastIndex =
+            panels.firstOrNull() { panel -> panel.sensorIndex == lastSensorIndex }?.positionIndex
+                ?: -1
+        val finalMaxActivePanels =
+            if (configuredPanelsCount >= maxActivePanels) maxActivePanels else configuredPanelsCount
+        while (panelsCount < finalMaxActivePanels) {
+            val claimedIndexes = mutableListOf<Int>()
+            if (lastIndex != -1) {
+                claimedIndexes.add(lastIndex)
+            }
+            activePanels.forEach {
+                val index = it.positionIndex
+                if (gap > 0) {
+                    claimedIndexes.add(index)
+                    for (i in 1..gap) {
+                        var indexWithGap = index + i
+                        if (indexWithGap >= panelsCount) {
+                            indexWithGap -= panelsCount
                         }
-                        for (i in 1..gap) {
-                            var indexWithGap = index - i
-                            if (indexWithGap < 0) {
-                                indexWithGap += panelsCount
-                            }
-                            claimedIndexes.add(indexWithGap)
+                        claimedIndexes.add(indexWithGap)
+                    }
+                    for (i in 1..gap) {
+                        var indexWithGap = index - i
+                        if (indexWithGap < 0) {
+                            indexWithGap += panelsCount
                         }
+                        claimedIndexes.add(indexWithGap)
                     }
                 }
-                val availableIndexes = panels.map { it.positionIndex }
-                val indexes =
-                    availableIndexes.filter { availableIndex -> !claimedIndexes.any { claimedIndex -> claimedIndex == availableIndex } }
-                val randomIndex =
-                    Random(System.currentTimeMillis()).nextInt(0, indexes.size)
-                val random = indexes[randomIndex]
-                val randomPanel = panels.first { it.positionIndex == random }
-
-                Log.info(
-                    Log.MessageGroup.GAME,
-                    "Next generated active panel $randomIndex(sensor: ${randomPanel.sensorIndex}) waits for hit"
-                )
-                activePanels.add(randomPanel)
-                Service.moduleCommunicationService.lightUpPanel(
-                    randomPanel.sensorIndex,
-                    Commands.PanelColor.GREEN,
-                    Int.MAX_VALUE
-                )
-                panelsCount++
             }
+            val availableIndexes = panels.map { it.positionIndex }
+            val indexes =
+                availableIndexes.filter { availableIndex -> !claimedIndexes.any { claimedIndex -> claimedIndex == availableIndex } }
+            val randomIndex =
+                Random(System.currentTimeMillis()).nextInt(0, indexes.size)
+            val random = indexes[randomIndex]
+            val randomPanel = panels.first { it.positionIndex == random }
+
+            Log.info(
+                this.javaClass.name,
+                "Next generated active panel $randomIndex(sensor: ${randomPanel.sensorIndex}) waits for hit"
+            )
+            activePanels.add(randomPanel)
+            Service.moduleCommunicationService.lightUpPanel(
+                randomPanel.sensorIndex,
+                Commands.PanelColor.GREEN,
+                Int.MAX_VALUE
+            )
+            panelsCount++
         }
     }
 
@@ -354,10 +361,12 @@ class GameProcessor() {
                         20
                     )
                 }
-                Service.gameService.gameProcessListener?.onGameStartedUpProgress(
-                    secondsPassed,
-                    Constants.READY_COUNTDOWN
-                )
+                synchronized(lock){
+                    Service.gameService.gameProcessListener?.onGameStartedUpProgress(
+                        secondsPassed,
+                        Constants.READY_COUNTDOWN
+                    )
+                }
                 var timeout: Int = (secondsTotal - secondsPassed)
                 if (timeout <= 1) {
                     timeout = 1
@@ -372,12 +381,11 @@ class GameProcessor() {
                     }
                 )
             }, onFinished = {
-                executor.submit {
-                    Service.moduleCommunicationService.lightOffAllPanels()
-                    Service.moduleCommunicationService.stopAllAnimations()
+                Service.moduleCommunicationService.lightOffAllPanels()
+                Service.moduleCommunicationService.stopAllAnimations()
 
+                synchronized(lock){
                     gameRunning()
-
                 }
                 // after startup sequence game is running
             })

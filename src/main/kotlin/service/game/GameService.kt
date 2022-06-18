@@ -16,11 +16,16 @@ class GameService {
     var selectedGameObject: GameObject? = null
 
     init {
-        Log.info(Log.MessageGroup.SYSTEM, "Game service init")
-        games.addAll(GameLibrary.all())
+        Log.info(this.javaClass.name, "Game service was initialized, games loading now...")
+        GameLibrary.all().forEach {
+            games.add(it)
+            Log.info(this.javaClass.name, "Loaded game: " + it.name)
+        }
+        Log.info(this.javaClass.name, "Finally loaded " + games.size + " games")
     }
 
     fun startGameProcess(gameObject: GameObject) {
+
         StatusMessage.show(
             StatusMessage.DOUBLE_BLOW_WILL_RESTART_GAME,
             "Dvojúderem zahájíš hru",
@@ -30,10 +35,14 @@ class GameService {
         this.selectedGameObject = gameObject
         processor = GameProcessor()
         processor!!.onGamePrepare(gameObject)
+
+        Log.info(this.javaClass.name, "Game process was started, new game is ready to go")
     }
 
     fun interruptGameProcess() {
         processor?.onGameInterrupt()
+
+        Log.info(this.javaClass.name, "Game process was interrupted, game was aborted")
     }
 
     fun getPagedList(): MutableList<MutableList<GameObject>> {
@@ -61,7 +70,7 @@ class GameService {
     }
 
     fun sendCurrentGameStatus() {
-        if(processor == null){
+        if (processor == null) {
             Service.remoteMasterService.sendNoGame()
         } else {
             processor!!.sendCurrentGameStatus()

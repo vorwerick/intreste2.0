@@ -2,8 +2,6 @@ package service.repositories
 
 import service.hw.Panel
 import service.led.ExternalDisplayService
-import service.remote.BluetoothApi.Endpoint.PANEL_SORTING
-import service.serial.protocol.log
 import utils.Constants
 import utils.Log
 import java.util.prefs.Preferences
@@ -28,7 +26,7 @@ class SettingsService {
     }
 
     init {
-        Log.info(Log.MessageGroup.SYSTEM, "Settings service init")
+        Log.info(this.javaClass.name, "Settings service init")
     }
 
 
@@ -120,7 +118,7 @@ class SettingsService {
                 return configuredPanels
             }
         } catch (e: Exception) {
-            Log.error(Log.MessageGroup.SYSTEM, e.message)
+            Log.error(this.javaClass.name, e.message)
             return null
         }
         return null

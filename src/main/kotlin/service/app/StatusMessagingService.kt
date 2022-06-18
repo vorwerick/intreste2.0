@@ -14,7 +14,7 @@ class StatusMessagingService {
     }
 
     init {
-        Log.info(Log.MessageGroup.SYSTEM, "Status messaging service init")
+        Log.info(this.javaClass.name, "Status messaging service init")
     }
 
     private val statusMessageListeners = mutableListOf<StatusMessageListener>()

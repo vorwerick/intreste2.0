@@ -16,6 +16,7 @@ import service.app.StatusMessagingService
 import service.game.GameService
 import service.game.data.GameObject
 import service.hw.ModuleSensorService
+import service.hw.RaspberryInfoService
 import service.led.ExternalDisplayService
 import service.remote.RemoteService
 import service.repositories.SettingsService
@@ -48,29 +49,29 @@ fun App() {
 
 fun main(strings : Array<String>) {
 
+    Log.instance.initialize()
+
     val noRemote = true
+
+    var listSensorFirstTime = false
 
     return application {
         Service.initialize()
         Service.settingsService.loadSettings()
+        Service.raspberryInfoService.initialize()
         if(!noRemote){
             Service.remoteMasterService.start()
         }
+        Service.moduleCommunicationService.connect()
+        Service.externalDisplayService.connect(Service.settingsService.lcdDisplayAddress, Service.settingsService.lcdDisplayPort)
+
+
 
         GlobalScope.launch(Dispatchers.Main) {
             delay(1500)
-            while (true){
-                if(Service.moduleCommunicationService.connect()){
-                    break;
-                }
-                delay(1500)
-                StatusMessage.show(9999, "USB module is not connected!",StatusMessage.Level.WARNING);
-            }
-
-            Service.externalDisplayService.connect(Service.settingsService.lcdDisplayAddress, Service.settingsService.lcdDisplayPort)
-            delay(1000)
             Service.moduleCommunicationService.listSensors()
 
+            delay(1000)
             val sortedPanels = Service.settingsService.sortedPanels
             if (sortedPanels != null) {
                 Service.moduleSensorService.loadConfiguredPanels(sortedPanels.toList())
@@ -81,39 +82,44 @@ fun main(strings : Array<String>) {
                     8000L
                 )
             }
-            Service.moduleCommunicationService.addSensorListener(object : ModuleCommunicationService.SensorListener {
-                override fun onSensorHit(sensorIndex: Int) {
+            Service.moduleCommunicationService.addSensorListener(
+                object : ModuleCommunicationService.SensorListener {
+                    override fun onSensorHit(sensorIndex: Int) {
 
-                }
+                    }
 
-                override fun onListSensorIds(sensorIds: List<Int>) {
-                    Service.moduleSensorService.setSensorsConnected(sensorIds)
-                    Service.moduleCommunicationService.lightOffAllPanels()
-                    Service.moduleCommunicationService.stopAllAnimations()
-                    Service.moduleCommunicationService.lightUpAllPanels(Commands.PanelColor.GREEN, 1000)
-                    if (sortedPanels != null) {
-                        GlobalScope.launch(Dispatchers.Main) {
-                            delay(3000)
-                            StatusMessage.show(
-                                StatusMessage.CONNECTED_TO_MODULE,
-                                "Připojeno k modulu Intreste",
-                                StatusMessage.Level.INFO,
-                                6000L
-                            )
-                            if(sensorIds.size == sortedPanels.size){
-                                Log.info(Log.MessageGroup.SYSTEM, "Starting game")
-                                Service.gameService.startGameProcess(
-                                    GameObject(
-                                        "Zasahni co nejvic",
-                                        "",
-                                        GameObject.Type.CLASSIC_RANDOM_TIMEOUT, GameObject.Rules(0, 0, 2, 2, 1),
-                                    )
+                    override fun onListSensorIds(sensorIds: List<Int>) {
+                        if(listSensorFirstTime){
+                            return
+                        }
+                        listSensorFirstTime = true
+                        Service.moduleSensorService.setSensorsConnected(sensorIds)
+                        Service.moduleCommunicationService.lightOffAllPanels()
+                        Service.moduleCommunicationService.stopAllAnimations()
+                        Service.moduleCommunicationService.lightUpAllPanels(Commands.PanelColor.GREEN, 1000)
+                        if (sortedPanels != null) {
+                            GlobalScope.launch(Dispatchers.Main) {
+                                delay(3000)
+                                StatusMessage.show(
+                                    StatusMessage.CONNECTED_TO_MODULE,
+                                    "Připojeno k modulu Intreste",
+                                    StatusMessage.Level.INFO,
+                                    6000L
                                 )
+                                if(sensorIds.size == sortedPanels.size){
+                                    Service.gameService.startGameProcess(
+                                        GameObject(
+                                            "Zasahni co nejvic",
+                                            "",
+                                            GameObject.Type.CLASSIC_RANDOM_TIMEOUT, GameObject.Rules(0, 0, 2, 2, 1),
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
-                }
             })
+
         }
         val screenSize: Dimension = Toolkit.getDefaultToolkit().screenSize
         val width: Double = screenSize.getWidth()
@@ -127,7 +133,6 @@ fun main(strings : Array<String>) {
             alwaysOnTop = false,
             enabled = true,
             state = WindowState(
-
                 placement = WindowPlacement.Fullscreen,
                 isMinimized = false,
                 size = DpSize(width.dp, (height-100).dp )
@@ -146,6 +151,7 @@ object Service {
     lateinit var moduleSensorService: ModuleSensorService
     lateinit var settingsService: SettingsService
     lateinit var statusMessagingService: StatusMessagingService
+    lateinit var raspberryInfoService: RaspberryInfoService
 
     fun initialize() {
         remoteMasterService = RemoteService()
@@ -155,5 +161,6 @@ object Service {
         moduleSensorService = ModuleSensorService()
         settingsService = SettingsService()
         statusMessagingService = StatusMessagingService()
+        raspberryInfoService = RaspberryInfoService()
     }
 }
