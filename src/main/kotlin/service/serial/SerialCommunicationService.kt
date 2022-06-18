@@ -20,6 +20,7 @@ import kotlin.concurrent.thread
 class SerialCommunicationService(private val communicationListener: CommunicationListener) {
 
     companion object {
+        private val lock = Object()
         private val executorPool = Executors.newFixedThreadPool(4)
     }
 
@@ -89,7 +90,9 @@ class SerialCommunicationService(private val communicationListener: Communicatio
         startReadTask(serialPort)
         startWriteThread(serialPort)
         isConnected = true
-        communicationListener.onConnected()
+        synchronized(lock){
+            communicationListener.onConnected()
+        }
     }
 
     private fun startReadTask(serialPort: SerialPort): Thread {
@@ -108,7 +111,9 @@ class SerialCommunicationService(private val communicationListener: Communicatio
                                 val message = readBuffer.toByteArray()
                                 val command =
                                     MessageResolver.resolve(message)
-                                communicationListener.onCommandReceived(command)
+                                synchronized(lock){
+                                    communicationListener.onCommandReceived(command)
+                                }
                                 readBuffer.clear()
                             }
                         }
@@ -135,13 +140,19 @@ class SerialCommunicationService(private val communicationListener: Communicatio
 
                     //Log.debug(this.javaClass.name, "Message sent: " + payload.toHexString())
                 } catch (e: IOException) {
-                    communicationListener.onConnectionLost()
+                    synchronized(lock){
+                        communicationListener.onConnectionLost()
+                    }
                     Log.warn(this.javaClass.name, e.message)
-                    communicationListener.onCommunicationError(e.message ?: "unknow error")
+                    synchronized(lock){
+                        communicationListener.onCommunicationError(e.message ?: "unknow error")
+                    }
                     Log.warn(this.javaClass.name, e.message)
                     break
                 } catch (e: InterruptedException) {
-                    communicationListener.onConnectionLost()
+                    synchronized(lock){
+                        communicationListener.onConnectionLost()
+                    }
                     Log.warn(this.javaClass.name, e.message)
                     break
                 }
