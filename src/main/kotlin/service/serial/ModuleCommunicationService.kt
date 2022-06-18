@@ -188,7 +188,6 @@ class ModuleCommunicationService : CommunicationListener {
     }
 
     override fun onCommandReceived(command: Command?) {
-        synchronized(sensorListeners) {
             if (command == null) {
                 return
             }
@@ -208,24 +207,31 @@ class ModuleCommunicationService : CommunicationListener {
                 }*/
                 is Commands.SensorHit -> {
                     sensorListeners.forEach { listener ->
-                        listener.onSensorHit(
-                            command.value
-                        )
+                        synchronized(sensorListeners){
+                            listener.onSensorHit(
+                                command.value
+                            )
+                        }
                     }
 
+
+
                     sensorHitListeners.forEach { listener ->
-                        listener.onSensorBlow(
-                            command.value
-                        )
+                        synchronized(sensorHitListeners){
+                            listener.onSensorBlow(
+                                command.value
+                            )
+                        }
                     }
 
                 }
                 is Commands.SensorList -> {
-                    val sensors = command.sensors.joinToString(", ")
                     sensorListeners.forEach { listener ->
-                        listener.onListSensorIds(
-                            command.sensors
-                        )
+                        synchronized(sensorListeners){
+                            listener.onListSensorIds(
+                                command.sensors
+                            )
+                        }
                     }
                 }
                 is Commands.GetVersion -> {
@@ -233,7 +239,7 @@ class ModuleCommunicationService : CommunicationListener {
                 }
 
             }
-        }
+
     }
 
     override fun onConnectionLost() {
