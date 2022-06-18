@@ -33,7 +33,7 @@ class RaspberryInfoService {
             while (true) {
 
                 try {
-                    process = Runtime.getRuntime().exec("cat sys/class/thermal/thermal_zone0/temp")
+                    process = Runtime.getRuntime().exec("cat /sys/class/thermal/thermal_zone0/temp")
                     process.waitFor()
                     val reader = BufferedReader(InputStreamReader(process.inputStream))
                     val line: String = reader.readLine()

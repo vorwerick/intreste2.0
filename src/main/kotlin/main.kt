@@ -62,12 +62,10 @@ fun main(strings : Array<String>) {
         if(!noRemote){
             Service.remoteMasterService.start()
         }
-        Service.moduleCommunicationService.connect()
         Service.externalDisplayService.connect(Service.settingsService.lcdDisplayAddress, Service.settingsService.lcdDisplayPort)
 
-
-
         GlobalScope.launch(Dispatchers.Main) {
+            Service.moduleCommunicationService.connect()
             delay(1500)
             Service.moduleCommunicationService.listSensors()
             val sortedPanels = Service.settingsService.sortedPanels

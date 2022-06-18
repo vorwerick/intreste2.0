@@ -45,6 +45,8 @@ class ModuleCommunicationService : CommunicationListener {
     private var communication: SerialCommunicationService? = null
 
     fun connect(): Boolean {
+        Log.info(this.javaClass.name, "Communication starting")
+
         communication = SerialCommunicationService(this)
 
         communication?.initialize()
