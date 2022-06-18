@@ -57,13 +57,17 @@ class SerialCommunicationService(private val communicationListener: Communicatio
         val device = findUsbDeviceById(services.rootUsbHub, Config.MODULE_PRODUCT_ID)
         Log.info(this.javaClass.name, "Found USB device " + device?.productString)
 
+
         val result =
-            SerialPort.getCommPorts().firstOrNull { serialPort -> serialPort.portDescription == device?.productString }
-                ?: throw NotFoundSerialDeviceException()
+            SerialPort.getCommPorts().firstOrNull { serialPort ->
+                Log.info(this.javaClass.name, "Serial port: " +   serialPort.portDescription)
+                serialPort.portDescription == device?.productString
+            }
 
-        Log.info(this.javaClass.name, "Starting communication")
-
-        startCommunication(result)
+        Log.info(this.javaClass.name, "Starting communication " + result?.descriptivePortName)
+        if(result != null){
+            startCommunication(result)
+        }
     }
 
     fun sendMessage(command: Command) {
