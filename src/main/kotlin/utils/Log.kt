@@ -31,6 +31,7 @@ class Log {
         if (!dir.exists()) {
             dir.mkdir()
         }
+        println(dir.absolutePath)
         val newFile = File(
             dir, "log-" + DateTimeFormatter
                 .ofPattern("HHmm-ddMMyy")
@@ -38,13 +39,13 @@ class Log {
                 .format(Instant.now()) + ".txt"
         )
         newFile.createNewFile()
+        println(newFile.absolutePath)
         file = newFile
     }
 
     private fun writeToFile(message: String) {
-        if(fileLoggingEnabled) {
-            file?.appendText(message + "\n")
-        }
+        file!!.appendText(message + "\n")
+
     }
 
     private var logLevel = MessageLevel.INFO
