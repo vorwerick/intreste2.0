@@ -60,7 +60,9 @@ class SerialCommunicationService(private val communicationListener: Communicatio
 
         val result =
             SerialPort.getCommPorts().firstOrNull { serialPort ->
-                Log.info(this.javaClass.name, "Serial port: " +   serialPort.portDescription)
+                Log.info(this.javaClass.name, "Serial port: " +   serialPort.portDescription + " " + serialPort.descriptivePortName + " " + serialPort.systemPortName + " " + serialPort.systemPortPath + " " )
+                Log.info(this.javaClass.name, "VS: " +   device?.productString + " " + device?.manufacturerString + " " + device?.serialNumberString + " ")
+
                 serialPort.portDescription == device?.productString
             }
 
