@@ -50,8 +50,10 @@ class ModuleCommunicationService : CommunicationListener {
         communication?.initialize()
         return try {
             communication?.connect()
+            Log.info(this.javaClass.name, "Connected to serial communication Intreste module")
             true
         } catch (e: NotFoundSerialDeviceException) {
+            Log.error(this.javaClass.name, e.localizedMessage)
             false
         }
     }
@@ -93,6 +95,7 @@ class ModuleCommunicationService : CommunicationListener {
     }
 
     fun listSensors() {
+        Log.info(this.javaClass.name, "List sensors call, waiting for response")
         communication!!.sendMessage(Commands.ListSensors())
     }
 

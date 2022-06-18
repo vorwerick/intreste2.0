@@ -70,16 +70,23 @@ fun main(strings : Array<String>) {
         GlobalScope.launch(Dispatchers.Main) {
             delay(1500)
             Service.moduleCommunicationService.listSensors()
-
-            delay(1000)
             val sortedPanels = Service.settingsService.sortedPanels
             if (sortedPanels != null) {
                 Service.moduleSensorService.loadConfiguredPanels(sortedPanels.toList())
+                Log.info(this.javaClass.name, "Panel indexes found and loaded from storage")
                 StatusMessage.show(
                     StatusMessage.PANEL_SORTING_LOADED,
                     "Pořadí načteno. Celkem ${sortedPanels.size} panelů.",
                     StatusMessage.Level.INFO,
                     8000L
+                )
+            } else {
+                Log.warn(this.javaClass.name, "Panel indexes not found, please configure first!")
+                StatusMessage.show(
+                    StatusMessage.PANEL_SORTING_LOADED,
+                    "Je potřeba nakonfigurovat panely!",
+                    StatusMessage.Level.WARNING,
+                    15000L
                 )
             }
             Service.moduleCommunicationService.addSensorListener(
@@ -89,6 +96,7 @@ fun main(strings : Array<String>) {
                     }
 
                     override fun onListSensorIds(sensorIds: List<Int>) {
+                        Log.info(this.javaClass.name, "Sensors connected! Number of panels: " + sensorIds.size)
                         if(listSensorFirstTime){
                             return
                         }
