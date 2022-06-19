@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#if java is installed
+
 rm -rf /etc/intreste
 mkdir /etc/intreste
 mkdir /etc/intreste/distribution
