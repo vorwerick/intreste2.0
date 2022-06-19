@@ -16,6 +16,8 @@ curl -X POST https://dzubera.cz/pushfile.php?key=intreste -F key=intreste -F fil
 sudo cp /etc/intreste/distribution/intreste2.0/build/compose/jars/Intreste-linux-arm64-2.0.0.jar /etc/intreste
 sudo cp /etc/intreste/distribution/intreste2.0/run.sh /etc/intreste
 sudo cp /etc/intreste/distribution/intreste2.0/update-jar-executable.sh /etc/intreste
+sudo chmod +x /etc/intreste/update-jar-executable.sh
+sudo chmod +x /etc/intreste/run.sh
 sudo rm -rf /etc/xdg/autostart/Intreste.desktop
 sudo rm -rf /home/ales/Desktop/Intreste.desktop
 sudo rm -rf /home/ales/Desktop/Update.desktop
