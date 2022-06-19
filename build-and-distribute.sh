@@ -12,7 +12,7 @@ cd /etc/intreste/distribution/intreste2.0
 ./gradlew --stop
 ./gradlew packageUberJarForCurrentOS
 sudo chmod 777 /etc/intreste/distribution/intreste2.0/build/compose/jars/Intreste-linux-arm64-2.0.0.jar
-curl -X POST https://dzubera.cz/pushfile.php?key=intreste -F key=intreste -F fileToUpload=@/etc/intreste/build/intreste2.0/build/compose/jars/Intreste-linux-arm64-2.0.0.jar
+curl -X POST https://dzubera.cz/pushfile.php?key=intreste -F key=intreste -F fileToUpload=@/etc/intreste/distribution/intreste2.0/build/compose/jars/Intreste-linux-arm64-2.0.0.jar
 sudo cp /etc/intreste/distribution/intreste2.0/build/compose/jars/Intreste-linux-arm64-2.0.0.jar /etc/intreste
 sudo cp /etc/intreste/distribution/intreste2.0/run.sh /etc/intreste
 sudo cp /etc/intreste/distribution/intreste2.0/update-jar-executable.sh /etc/intreste
