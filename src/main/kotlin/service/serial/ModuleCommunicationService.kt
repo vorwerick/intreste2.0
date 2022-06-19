@@ -1,16 +1,17 @@
 package service.serial
 
 
-import utils.Constants
+import Service
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import service.repositories.SettingsService
 import service.serial.protocol.Command
 import service.serial.protocol.Commands
+import utils.Constants
 import utils.Log
+import utils.mainThread
 import java.util.*
-import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
 
@@ -213,25 +214,34 @@ class ModuleCommunicationService : CommunicationListener {
                 }
             }*/
             is Commands.SensorHit -> {
-                synchronized(sensorListeners) {
-                    sensorListeners.forEach { listener ->
+                val sensorListenersIterator: MutableIterator<SensorListener> = sensorListeners.iterator()
+                while (sensorListenersIterator.hasNext()) {
+                    val listener: SensorListener = sensorListenersIterator.next()
+                    mainThread {
                         listener.onSensorHit(
                             command.value
                         )
                     }
                 }
 
-                synchronized(sensorHitListeners) {
-                    sensorHitListeners.forEach { listener ->
+
+                val sensorHitListenersIterator: MutableIterator<SensorBlowListener> = sensorHitListeners.iterator()
+                while (sensorHitListenersIterator.hasNext()) {
+                    val listener: SensorBlowListener = sensorHitListenersIterator.next()
+                    mainThread {
                         listener.onSensorBlow(
                             command.value
                         )
                     }
                 }
+
             }
             is Commands.SensorList -> {
-                synchronized(sensorListeners) {
-                    sensorListeners.forEach { listener ->
+
+                val sensorListenersIterator: MutableIterator<SensorListener> = sensorListeners.iterator()
+                while (sensorListenersIterator.hasNext()) {
+                    val listener: SensorListener = sensorListenersIterator.next()
+                    mainThread {
                         listener.onListSensorIds(
                             command.sensors
                         )

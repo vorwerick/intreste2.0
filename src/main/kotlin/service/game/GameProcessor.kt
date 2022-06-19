@@ -243,6 +243,10 @@ class GameProcessor() {
 
 
     private fun hit(sensorIndex: Int) {
+        Log.info(
+            this.javaClass.name,
+            "Hit correct panel, index is $sensorIndex"
+        )
         gameState = GameState.PROGRESS
         gameStatus.hitCount++
         Service.moduleCommunicationService.lightOffPanel(sensorIndex) // off
@@ -255,6 +259,10 @@ class GameProcessor() {
     }
 
     private fun miss(sensorIndex: Int) {
+        Log.info(
+            this.javaClass.name,
+            "Hit wrong panel, index is $sensorIndex"
+        )
         gameState = GameState.PROGRESS
         gameStatus.missCount++
         Service.moduleCommunicationService.lightUpPanel(
