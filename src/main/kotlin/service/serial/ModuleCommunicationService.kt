@@ -9,9 +9,15 @@ import service.repositories.SettingsService
 import service.serial.protocol.Command
 import service.serial.protocol.Commands
 import utils.Log
+import java.util.concurrent.locks.ReentrantLock
+import java.util.concurrent.locks.ReentrantReadWriteLock
 
 
 class ModuleCommunicationService : CommunicationListener {
+
+    val lock = ReentrantReadWriteLock()
+    val readLock = lock.readLock()
+    val writeLock = lock.writeLock()
 
     init {
         Log.info(this.javaClass.name, "Module comunication service was initialized")
@@ -188,57 +194,55 @@ class ModuleCommunicationService : CommunicationListener {
     }
 
     override fun onCommandReceived(command: Command?) {
-            if (command == null) {
-                return
-            }
-            when (command) {
-                /*is Commands.Data -> {
-                    command.sensors.forEachIndexed { index, sensor ->
-                        senso.forEach { listener ->
-                             synchronized(connectionListeners) {
-                                listener.onSe(
-                                    index,
-                                    sensor.data,
-                                    sensor.treshold
-                                )
-                            }
-                        }
-                    }
-                }*/
-                is Commands.SensorHit -> {
-                    sensorListeners.forEach { listener ->
-                        synchronized(sensorListeners){
-                            listener.onSensorHit(
-                                command.value
+        if (command == null) {
+            return
+        }
+        when (command) {
+            /*is Commands.Data -> {
+                command.sensors.forEachIndexed { index, sensor ->
+                    senso.forEach { listener ->
+                         synchronized(connectionListeners) {
+                            listener.onSe(
+                                index,
+                                sensor.data,
+                                sensor.treshold
                             )
                         }
                     }
+                }
+            }*/
+            is Commands.SensorHit -> {
+                synchronized(sensorListeners) {
+                    sensorListeners.forEach { listener ->
+                        listener.onSensorHit(
+                            command.value
+                        )
+                    }
+                }
 
-
-
+                synchronized(sensorHitListeners) {
                     sensorHitListeners.forEach { listener ->
-                        synchronized(sensorHitListeners){
-                            listener.onSensorBlow(
-                                command.value
-                            )
-                        }
+                        listener.onSensorBlow(
+                            command.value
+                        )
                     }
-
                 }
-                is Commands.SensorList -> {
+            }
+            is Commands.SensorList -> {
+                synchronized(sensorListeners) {
                     sensorListeners.forEach { listener ->
-                        synchronized(sensorListeners){
-                            listener.onListSensorIds(
-                                command.sensors
-                            )
-                        }
+                        listener.onListSensorIds(
+                            command.sensors
+                        )
                     }
                 }
-                is Commands.GetVersion -> {
-
-                }
+            }
+            is Commands.GetVersion -> {
 
             }
+
+        }
+
 
     }
 
@@ -272,27 +276,39 @@ class ModuleCommunicationService : CommunicationListener {
     }
 
     fun addSensorListener(listener: SensorListener) {
-        sensorListeners.add(listener)
+        synchronized(sensorListeners) {
+            sensorListeners.add(listener)
+        }
     }
 
     fun removeSensorListener(listener: SensorListener) {
-        sensorListeners.remove(listener)
+        synchronized(sensorListeners) {
+            sensorListeners.remove(listener)
+        }
     }
 
     fun addSensorBlowListener(listener: SensorBlowListener) {
-        sensorHitListeners.add(listener)
+        synchronized(sensorHitListeners) {
+            sensorHitListeners.add(listener)
+        }
     }
 
     fun removeSensorBlowListener(listener: SensorBlowListener) {
-        sensorHitListeners.remove(listener)
+        synchronized(sensorHitListeners) {
+            sensorHitListeners.remove(listener)
+        }
     }
 
     fun addConnectionListener(listener: ConnectionListener) {
-        connectionListeners.add(listener)
+        synchronized(connectionListeners) {
+            connectionListeners.add(listener)
+        }
     }
 
     fun removeConnectionListener(listener: ConnectionListener) {
-        connectionListeners.remove(listener)
+        synchronized(connectionListeners) {
+            connectionListeners.remove(listener)
+        }
     }
 
     fun lightOffAllPanels() {
