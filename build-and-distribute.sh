@@ -1,7 +1,8 @@
 #!/bin/bash
 
-rm -rf /etc/intreste/distribution
-touch /etc/intreste/distribution
+rm -rf /etc/intreste
+mkdir /etc/intreste
+mkdir /etc/intreste/distribution
 cd /etc/intreste/distribution
 echo "Building application"
 git clone https://vorwerick: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@github.com/vorwerick/intreste2.0.git
