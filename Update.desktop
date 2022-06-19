@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
 Name=Update
-Exec=sudo ~/intreste2.0/update-jar-executable.sh
+Exec=sudo /etc/intreste/update-jar-executable.sh
 Comment=Intreste update
 Terminal=true

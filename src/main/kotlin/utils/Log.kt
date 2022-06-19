@@ -103,7 +103,7 @@ class Log {
 
 fun Log.Message.printString(): String {
     return DateTimeFormatter
-        .ofPattern("dd/mm/yy HH:mm:ss.SSS")
+        .ofPattern("dd/MM/yy HH:mm:ss.SSS")
         .withZone(ZoneOffset.UTC)
         .format(timestamp) + " " + "["+ level.name+  "] "+ className + " > " + text
 }
