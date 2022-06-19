@@ -9,7 +9,7 @@ git clone https://vorwerick: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@github.com/
 cd /etc/intreste/distribution/intreste2.0
 ./gradlew --stop
 ./gradlew packageUberJarForCurrentOS
-sudo chmod +x /etc/intreste/distribution/intreste2.0/build/compose/jars/Intreste-linux-arm64-2.0.0.jar
+sudo chmod 777 /etc/intreste/distribution/intreste2.0/build/compose/jars/Intreste-linux-arm64-2.0.0.jar
 curl -X POST https://dzubera.cz/pushfile.php?key=intreste -F key=intreste -F fileToUpload=@/etc/intreste/build/intreste2.0/build/compose/jars/Intreste-linux-arm64-2.0.0.jar
 sudo cp /etc/intreste/distribution/intreste2.0/build/compose/jars/Intreste-linux-arm64-2.0.0.jar /etc/intreste
 sudo cp /etc/intreste/distribution/intreste2.0/run.sh /etc/intreste
