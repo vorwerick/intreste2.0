@@ -9,6 +9,7 @@ import service.repositories.SettingsService
 import service.serial.protocol.Command
 import service.serial.protocol.Commands
 import utils.Log
+import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
@@ -44,9 +45,9 @@ class ModuleCommunicationService : CommunicationListener {
         const val ANIM_ID_ARROW = 2
     }
 
-    private val sensorListeners = mutableListOf<SensorListener>()
-    private val sensorHitListeners = mutableListOf<SensorBlowListener>()
-    private val connectionListeners = mutableListOf<ConnectionListener>()
+    private val sensorListeners = Collections.synchronizedList(mutableListOf<SensorListener>())
+    private val sensorHitListeners = Collections.synchronizedList(mutableListOf<SensorBlowListener>())
+    private val connectionListeners = Collections.synchronizedList(mutableListOf<ConnectionListener>())
 
     private var communication: SerialCommunicationService? = null
 

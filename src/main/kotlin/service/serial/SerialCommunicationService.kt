@@ -7,6 +7,7 @@ import service.serial.protocol.MessageResolver
 import service.serial.protocol.TMsg_EOF
 import utils.Constants
 import utils.Log
+import utils.mainThread
 import utils.toHexString
 import java.io.IOException
 import java.util.concurrent.ArrayBlockingQueue
@@ -61,12 +62,15 @@ class SerialCommunicationService(private val communicationListener: Communicatio
 
         val result =
             SerialPort.getCommPorts().firstOrNull { serialPort ->
-                Log.info(this.javaClass.name, "Serial port: " +   serialPort.portDescription + " " + serialPort.descriptivePortName + " " + serialPort.systemPortName + " " + serialPort.systemPortPath + " " )
+                Log.info(
+                    this.javaClass.name,
+                    "Serial port: " + serialPort.portDescription + " " + serialPort.descriptivePortName + " " + serialPort.systemPortName + " " + serialPort.systemPortPath + " "
+                )
                 serialPort.portDescription.contains("ST")
             }
 
         Log.info(this.javaClass.name, "Starting communication " + result?.descriptivePortName)
-        if(result != null){
+        if (result != null) {
             startCommunication(result)
         }
     }
@@ -90,7 +94,7 @@ class SerialCommunicationService(private val communicationListener: Communicatio
         startReadTask(serialPort)
         startWriteThread(serialPort)
         isConnected = true
-        synchronized(lock){
+        synchronized(lock) {
             communicationListener.onConnected()
         }
     }
@@ -111,7 +115,7 @@ class SerialCommunicationService(private val communicationListener: Communicatio
                                 val message = readBuffer.toByteArray()
                                 val command =
                                     MessageResolver.resolve(message)
-                                synchronized(lock){
+                                mainThread {
                                     communicationListener.onCommandReceived(command)
                                 }
                                 readBuffer.clear()
@@ -140,17 +144,17 @@ class SerialCommunicationService(private val communicationListener: Communicatio
 
                     //Log.debug(this.javaClass.name, "Message sent: " + payload.toHexString())
                 } catch (e: IOException) {
-                    synchronized(lock){
+                    synchronized(lock) {
                         communicationListener.onConnectionLost()
                     }
                     Log.warn(this.javaClass.name, e.message)
-                    synchronized(lock){
+                    synchronized(lock) {
                         communicationListener.onCommunicationError(e.message ?: "unknow error")
                     }
                     Log.warn(this.javaClass.name, e.message)
                     break
                 } catch (e: InterruptedException) {
-                    synchronized(lock){
+                    synchronized(lock) {
                         communicationListener.onConnectionLost()
                     }
                     Log.warn(this.javaClass.name, e.message)
