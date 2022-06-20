@@ -65,9 +65,11 @@ fun main(strings : Array<String>) {
 
         GlobalScope.launch(Dispatchers.Main) {
             Service.moduleCommunicationService.connect()
-
+            GlobalScope.launch(Dispatchers.Main){
+                delay(8000)
+                Service.externalDisplayService.connect(Service.settingsService.lcdDisplayAddress, Service.settingsService.lcdDisplayPort)
+            }
             delay(1500)
-            Service.externalDisplayService.connect(Service.settingsService.lcdDisplayAddress, Service.settingsService.lcdDisplayPort)
             Service.moduleCommunicationService.listSensors()
             val sortedPanels = Service.settingsService.sortedPanels
             if (sortedPanels != null) {
