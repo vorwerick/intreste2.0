@@ -66,7 +66,7 @@ fun main(strings : Array<String>) {
         GlobalScope.launch(Dispatchers.Main) {
             Service.moduleCommunicationService.connect()
             GlobalScope.launch(Dispatchers.Main){
-                delay(5000)
+                delay(10000)
                 Service.externalDisplayService.connect(Service.settingsService.lcdDisplayAddress, Service.settingsService.lcdDisplayPort)
             }
             delay(1500)
@@ -108,7 +108,7 @@ fun main(strings : Array<String>) {
                         Service.moduleCommunicationService.lightUpAllPanels(Commands.PanelColor.GREEN, 1000)
                         if (sortedPanels != null) {
                             GlobalScope.launch(Dispatchers.Main) {
-                                delay(5000)
+                                delay(10000)
                                 StatusMessage.show(
                                     StatusMessage.CONNECTED_TO_MODULE,
                                     "Připojeno k modulu Intreste",
