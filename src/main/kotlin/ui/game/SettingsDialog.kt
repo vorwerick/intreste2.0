@@ -64,19 +64,6 @@ fun SettingsDialog(onDismiss: () -> Unit, onPositive: () -> Unit) {
                         },
                         label = { Text("LED display port") }
                     )
-                    Button(onClick = {
-                        if (lcdIsConnected.value) {
-                            Service.externalDisplayService.disconnect("")
-                        } else {
-                            Service.externalDisplayService.connect(
-                                ledAddress.value,
-                                ledPort.value.toInt()
-                            )
-                        }
-                    }) {
-                        val text = if (lcdIsConnected.value) "LED Display disconnect" else "LED Display connect"
-                        Text(text)
-                    }
                     Button(onClick = { Service.externalDisplayService.testDisplay() }, enabled = lcdIsConnected.value) {
                         Text("LED Display test")
                     }

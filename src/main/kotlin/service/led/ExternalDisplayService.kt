@@ -1,5 +1,6 @@
 package service.led
 
+import Service
 import utils.mainThread
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -74,6 +75,7 @@ class ExternalDisplayService {
     private var lcdDisplayListener: LCDDisplayListener? = null
 
     private var executor: ExecutorService = Executors.newFixedThreadPool(2)
+    private var connected = true
 
     @Volatile
     var client: Socket? = null
@@ -101,7 +103,7 @@ class ExternalDisplayService {
         }
     }
 
-    fun showMessageSortPanels(){
+    fun showMessageSortPanels() {
         when (Service.settingsService.externalDisplaySize) {
             DisplaySize._96x16 -> {
                 showTextOnDisplay(RECT_FULL_DISPLAY_96x16, "SORT!", RED, FONT_CLASSIC)
@@ -306,31 +308,45 @@ class ExternalDisplayService {
         }
     }
 
-    fun connect(address: String, port: Int) {
+    fun start() {
         executor.submit {
-            try {
-                client = Socket()
-                client?.connect(
-                    InetSocketAddress(
-                        address,
-                        port
-                    ), 5000
-                )
-                Log.info(this.javaClass.name, "Connected to LCD display")
-
-                Thread.sleep(100)
-                defineDisplays()
-                Thread.sleep(100)
-                clearAll()
-                Thread.sleep(100)
-                testDisplay()
-                mainThread {
-                    Service.settingsService.lcdDisplayConnected = true
-                   lcdDisplayListener?.onLCDDisplayConnected()
+            while (true) {
+                Thread.sleep(3000) // safety delay
+                if (client?.isConnected == true) {
+                    continue // wait
                 }
-            } catch (e: IOException) {
-                Log.error(this.javaClass.name, e.message)
-                e.message?.let { disconnect(it) }
+
+                val address = Service.settingsService.lcdDisplayAddress
+                val port = Service.settingsService.lcdDisplayPort
+                try { // try connect
+                    Log.info(
+                        this.javaClass.name,
+                        "Connecting to LCD display on ${address}:${port}"
+                    )
+                    client = Socket()
+                    client?.connect(
+                        InetSocketAddress(
+                            address,
+                            port
+                        ), 5000
+                    )
+
+                    Log.info(this.javaClass.name, "Connected to LCD display")
+
+                    Thread.sleep(100)
+                    defineDisplays()
+                    Thread.sleep(100)
+                    clearAll()
+                    Thread.sleep(100)
+                    testDisplay()
+                    mainThread {
+                        Service.settingsService.lcdDisplayConnected = true
+                        lcdDisplayListener?.onLCDDisplayConnected()
+                    }
+                } catch (e: IOException) {
+                    Log.error(this.javaClass.name, e.message)
+                    disconnect(e.localizedMessage)
+                }
             }
         }
     }

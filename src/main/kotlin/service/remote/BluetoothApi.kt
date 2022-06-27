@@ -4,7 +4,7 @@ package service.remote
 class BluetoothApi {
 
     object Endpoint {
-        const val CONNECT = "connect"
+        const val CONNECT = "start"
         const val DISCONNECT = "disconnect"
         const val PING = "ping" // both direction
         const val GET_GAMES = "get_games"

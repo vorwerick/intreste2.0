@@ -51,7 +51,6 @@ fun main(strings : Array<String>) {
 
     Log.instance.initialize()
 
-    val noRemote = true
 
     var listSensorFirstTime = false
 
@@ -59,15 +58,13 @@ fun main(strings : Array<String>) {
         Service.initialize()
         Service.settingsService.loadSettings()
         Service.raspberryInfoService.initialize()
-        if(!noRemote){
-            Service.remoteMasterService.start()
-        }
+        Service.externalDisplayService.start()
+        Service.remoteMasterService.start()
 
         GlobalScope.launch(Dispatchers.Main) {
             Service.moduleCommunicationService.connect()
             GlobalScope.launch(Dispatchers.Main){
                 delay(10000)
-                Service.externalDisplayService.connect(Service.settingsService.lcdDisplayAddress, Service.settingsService.lcdDisplayPort)
             }
             delay(1500)
             Service.moduleCommunicationService.listSensors()
