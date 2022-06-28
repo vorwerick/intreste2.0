@@ -10,6 +10,7 @@ repositories {
     mavenCentral()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     google()
+    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
@@ -25,13 +26,16 @@ dependencies {
 
     implementation("com.google.code.gson:gson:2.8.9")
 
+    implementation ("ch.qos.logback:logback-core:+")
+    implementation ("ch.qos.logback:logback-classic:+")
+    implementation ("com.github.weliem.blessed-bluez:blessed:0.40")
+
     implementation(files("libs/commons-lang3-3.8.1.jar"))
     implementation(files("libs/usb4java-1.3.0.jar"))
     implementation(files("libs/usb4java-javax-1.3.0.jar"))
     implementation(files("libs/usb-api-1.0.2.jar"))
-    implementation(files("libs/bluecove-gpl-2.1.0.jar"))
-    implementation(files("libs/bluecove-2.1.0.jar"))
-
+    implementation(files("libs/bluecove-gpl-2.1.0-SNAPSHOT.jar"))
+    implementation(files("libs/bluecove-2.1.1-SNAPSHOT.jar"))
 
     if(org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_MAC)){
         implementation(files("libs/libusb4java-1.3.0-darwin-x86-64.jar"))
