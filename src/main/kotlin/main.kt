@@ -47,9 +47,15 @@ fun App() {
     }
 }
 
-fun main(strings : Array<String>) {
+class MainApp {
+    companion object {
+        @JvmStatic fun main(args: Array<String>) {
+            mainRun(args)
+        }
+    }
+}
 
-
+fun mainRun(strings : Array<String>) {
 
     Log.instance.initialize()
 
