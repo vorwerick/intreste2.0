@@ -49,6 +49,8 @@ fun App() {
 
 fun main(strings : Array<String>) {
 
+
+
     Log.instance.initialize()
 
 
@@ -150,6 +152,11 @@ fun main(strings : Array<String>) {
 }
 
 object Service {
+
+    init {
+        System.setProperty("java.awt.headless", "true")
+    }
+
     lateinit var remoteMasterService: RemoteService
     lateinit var externalDisplayService: ExternalDisplayService
     lateinit var gameService: GameService
