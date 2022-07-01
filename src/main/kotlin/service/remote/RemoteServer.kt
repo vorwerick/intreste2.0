@@ -43,8 +43,12 @@ class RemoteServer {
     ): Boolean {
         this.readMessageListener = readMessageListener
         this.connectionStatusListener = connectionListener
+
+
         return try {
             serialPort.openPort()
+            Log.info(this.javaClass.canonicalName, "Opening serial port for communication")
+
             startReadTask(serialPort)
             //startWriteTask(serialPort)
             true
@@ -66,7 +70,8 @@ class RemoteServer {
                     val bytes = inputStream?.read(buffer) ?: 0
                     if (bytes > 0) {
                         val mes = String(buffer.sliceArray(0 until bytes))
-                        println("Message received: $mes")
+                        Log.info(this.javaClass.canonicalName, "Message received $mes")
+
                         if (mes.contains("ping")) {
                         } else {
                             readMessageListener?.onReadMessage(mes)
@@ -114,6 +119,8 @@ class RemoteServer {
             try {
                 val bytes = message.toByteArray()
                 outputStream?.write(bytes, 0, bytes.size)
+                Log.info(this.javaClass.canonicalName, "Message sent $message")
+
             } catch (e: IOException) {
                 e.printStackTrace()
                 closeSockets(true)
