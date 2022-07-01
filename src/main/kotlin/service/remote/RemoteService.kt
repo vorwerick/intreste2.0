@@ -25,8 +25,10 @@ class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionL
             return false
         }
         started = false
+        SerialPort.getCommPorts().forEach {
+            Log.info(this.javaClass.canonicalName, "Found port " + it.portLocation + " " + it.portDescription + " " + it.systemPortPath + " " + it.systemPortName +" " + it.descriptivePortName)
+        }
         val serialPort = SerialPort.getCommPorts().firstOrNull {
-            Log.info(this.javaClass.canonicalName, "Found port " + it.systemPortPath)
             it.portDescription.contains("rfcomm")
         }
         if (serialPort != null) {
