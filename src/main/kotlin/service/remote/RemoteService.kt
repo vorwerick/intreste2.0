@@ -1,5 +1,6 @@
 package service.remote
 
+import com.fazecast.jSerialComm.SerialPort
 import com.google.gson.Gson
 import service.game.data.GameObject
 import service.game.data.GameStatus
@@ -12,7 +13,6 @@ import utils.Log
 class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionListener {
 
     private var remoteServer: RemoteServer = RemoteServer()
-    private var bluetoothApi: BluetoothApi = BluetoothApi()
     var started = false
     private var remoteCommunicationListener: RemoteCommunicationListener? = null
 
@@ -24,12 +24,17 @@ class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionL
         if (started) {
             return false
         }
-        remoteServer.start()
-        remoteServer.readMessageListener = this
-        remoteServer.connectionStatusListener = this
-        started = true
-        return started
+        started = false
+        val serialPort = SerialPort.getCommPorts().firstOrNull { it.portDescription.contains("rfcomm") }
+        if (serialPort != null) {
+            remoteServer.start(serialPort, this, this)
+            started = true
+            return true
+        }
+        Log.warn(this.javaClass.canonicalName, "Serial port rfcomm not found!")
 
+
+        return false
     }
 
     fun dispose() {
