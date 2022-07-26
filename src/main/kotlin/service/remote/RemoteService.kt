@@ -7,7 +7,9 @@ import service.game.data.GameStatus
 import service.remote.api.CurrentGame
 import service.remote.api.GameState
 import service.remote.api.Packet
+import service.remote.protocol.MessageProtocol
 import utils.Log
+import java.lang.StringBuilder
 
 
 class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionListener {
@@ -26,7 +28,10 @@ class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionL
         }
         started = false
         SerialPort.getCommPorts().forEach {
-            Log.info(this.javaClass.canonicalName, "Found port " + it.portLocation + " " + it.portDescription + " " + it.systemPortPath + " " + it.systemPortName +" " + it.descriptivePortName)
+            Log.info(
+                this.javaClass.canonicalName,
+                "Found port " + it.portLocation + " " + it.portDescription + " " + it.systemPortPath + " " + it.systemPortName + " " + it.descriptivePortName
+            )
         }
         val serialPort = SerialPort.getCommPorts().firstOrNull {
             it.portDescription.contains("S0") // it is first UART PORT used for BT
@@ -47,8 +52,11 @@ class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionL
     }
 
     override fun onReadMessage(message: String) {
+        Log.info(this.javaClass.canonicalName, "Message received $message")
+
+        val text = message.replace(MessageProtocol.START_CHAR, "").replace(MessageProtocol.END_CHAR, "")
         val gson = Gson()
-        val packet = gson.fromJson(message, Packet::class.java)
+        val packet = gson.fromJson(text, Packet::class.java)
 
         remoteCommunicationListener?.onRemoteCommand(packet.endpoint, packet.payload)
     }
@@ -91,7 +99,10 @@ class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionL
         )
         val g = Gson()
         val p = g.toJson(packet)
-        remoteServer.write(p)
+        val stringBuilder = StringBuilder()
+        stringBuilder.insert(0, MessageProtocol.START_CHAR).append(p).append(MessageProtocol.END_CHAR)
+        Log.info(this.javaClass.canonicalName, "Message sent: " + stringBuilder.toString())
+        remoteServer.write(stringBuilder.toString())
     }
 
     fun sendNoGame() {

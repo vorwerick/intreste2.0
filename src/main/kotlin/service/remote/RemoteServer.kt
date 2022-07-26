@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import service.remote.protocol.MessageProtocol
 import utils.Log
 import utils.mainThread
 import java.io.IOException
@@ -63,19 +64,21 @@ class RemoteServer {
     private fun startReadTask(serialPort: SerialPort): Thread {
         return thread(start = true, isDaemon = false, name = "COMM_BLUETOOTH_READ_THREAD") {
             val inputStream = serialPort.inputStream
+            val readBuffer = mutableListOf<Byte>()
             while (true) {
                 Thread.sleep(utils.Constants.NONBLOCKING_CYCLE_DELAY)
                 try {
                     val buffer = ByteArray(512)
                     val bytes = inputStream?.read(buffer) ?: 0
                     if (bytes > 0) {
-                        val mes = String(buffer.sliceArray(0 until bytes))
-                        Log.info(this.javaClass.canonicalName, "Message received $mes")
+                        val message = String()
 
-                        if (mes.contains("ping")) {
-                        } else {
-                            readMessageListener?.onReadMessage(mes)
+                        readBuffer.addAll(buffer.sliceArray(0 until bytes).toMutableList())
+                        if(message.contains(MessageProtocol.END_CHAR)){
+                            readMessageListener?.onReadMessage(message)
+                            readBuffer.clear()
                         }
+
                         changeConnectionStatus(ConnectionStatus.DISCONNECTED)
                     }
                 } catch (e: IOException) {
