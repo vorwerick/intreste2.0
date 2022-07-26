@@ -71,9 +71,9 @@ class RemoteServer {
                     val buffer = ByteArray(512)
                     val bytes = inputStream?.read(buffer) ?: 0
                     if (bytes > 0) {
-                        val message = String()
-                        Log.info("REMOTE", String(buffer.sliceArray(0 until bytes)))
-                        readBuffer.addAll(buffer.sliceArray(0 until bytes).toMutableList())
+                        val message = String(buffer.sliceArray(0 until bytes))
+                        Log.info("REMOTE", message)
+                        readBuffer.addAll(message.toByteArray().toMutableList())
                         if(message.contains(MessageProtocol.END_CHAR)){
                             readMessageListener?.onReadMessage(String(readBuffer.toByteArray()))
                             readBuffer.clear()
