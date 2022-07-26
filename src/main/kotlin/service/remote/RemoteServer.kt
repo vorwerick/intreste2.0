@@ -65,6 +65,7 @@ class RemoteServer {
         return thread(start = true, isDaemon = false, name = "COMM_BLUETOOTH_READ_THREAD") {
             val inputStream = serialPort.inputStream
             val readBuffer = mutableListOf<Byte>()
+            var reading = false
             while (true) {
                 Thread.sleep(utils.Constants.NONBLOCKING_CYCLE_DELAY)
                 try {
@@ -73,10 +74,16 @@ class RemoteServer {
                     if (bytes > 0) {
                         val message = String(buffer.sliceArray(0 until bytes))
                         Log.info("REMOTE", message)
-                        readBuffer.addAll(message.toByteArray().toMutableList())
-                        if(message.contains(MessageProtocol.END_CHAR)){
-                            readMessageListener?.onReadMessage(String(readBuffer.toByteArray()))
-                            readBuffer.clear()
+                        if (message.contains(MessageProtocol.START_CHAR)) {
+                            reading = true
+                        }
+                        if (reading) {
+                            readBuffer.addAll(message.toByteArray().toMutableList())
+                            if ((message.contains(MessageProtocol.END_CHAR))) {
+                                readMessageListener?.onReadMessage(String(readBuffer.toByteArray()))
+                                readBuffer.clear()
+                                reading = false
+                            }
                         }
 
                         changeConnectionStatus(ConnectionStatus.DISCONNECTED)
