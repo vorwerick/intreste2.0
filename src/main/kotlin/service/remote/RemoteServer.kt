@@ -75,7 +75,7 @@ class RemoteServer {
                         Log.info("REMOTE", String(buffer.sliceArray(0 until bytes)))
                         readBuffer.addAll(buffer.sliceArray(0 until bytes).toMutableList())
                         if(message.contains(MessageProtocol.END_CHAR)){
-                            readMessageListener?.onReadMessage(message)
+                            readMessageListener?.onReadMessage(String(readBuffer.toByteArray()))
                             readBuffer.clear()
                         }
 
