@@ -73,27 +73,28 @@ class RemoteServer {
             while (true) {
                 Thread.sleep(utils.Constants.NONBLOCKING_CYCLE_DELAY)
                 try {
-                    val buffer = ByteArray(512)
-                    val bytes = inputStream?.read(buffer) ?: 0
-                    Log.info("REMOTE READ", buffer.toString())
 
-                    if (bytes > 0) {
-                        val message = String(buffer.sliceArray(0 until bytes))
-                        Log.info("REMOTE READ", message)
-                        if (message.contains(MessageProtocol.START_CHAR)) {
-                            reading = true
-                        }
-                        if (reading) {
-                            readBuffer.addAll(message.toByteArray().toMutableList())
-                            if ((message.contains(MessageProtocol.END_CHAR))) {
-                                readMessageListener?.onReadMessage(String(readBuffer.toByteArray()))
-                                readBuffer.clear()
-                                reading = false
-                            }
-                        }
-
-                        changeConnectionStatus(ConnectionStatus.DISCONNECTED)
+                    val available = inputStream?.available() ?: 0
+                    if(available <= 0){
+                        continue
                     }
+                    val buffer = ByteArray(available)
+                    val bytes = inputStream?.read(buffer, 0, available) ?: 0
+
+                    val message = String(buffer)
+                    Log.info("REMOTE READ", message)
+                    if (message.contains(MessageProtocol.START_CHAR)) {
+                        reading = true
+                    }
+                    if (reading) {
+                        readBuffer.addAll(message.toByteArray().toMutableList())
+                        if ((message.contains(MessageProtocol.END_CHAR))) {
+                            readMessageListener?.onReadMessage(String(readBuffer.toByteArray()))
+                            readBuffer.clear()
+                            reading = false
+                        }
+                    }
+
                 } catch (e: IOException) {
 
                 } catch (se: SerialPortIOException) {
