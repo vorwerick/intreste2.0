@@ -34,7 +34,7 @@ class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionL
             )
         }
         val serialPort = SerialPort.getCommPorts().firstOrNull {
-            it.portDescription.contains("S0") // it is first UART PORT used for BT
+            it.portDescription.contains("AMA0") // it is first UART PORT used for BT
         }
         if (serialPort != null) {
             remoteServer.start(serialPort, this, this)
