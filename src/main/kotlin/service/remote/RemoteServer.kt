@@ -52,6 +52,8 @@ class RemoteServer {
 
             startReadTask(serialPort)
             //startWriteTask(serialPort)
+            write("AT+UART=115200,1,2")
+            write("AT+NAME=INTRESTE")
             true
 
         } catch (e: IOException) {
@@ -128,7 +130,8 @@ class RemoteServer {
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 val bytes = message.toByteArray()
-                outputStream?.write(bytes, 0, bytes.size)
+                outputStream?.write(bytes)
+                outputStream?.flush()
                 Log.info(this.javaClass.canonicalName, "Message sent $message")
 
             } catch (e: IOException) {
