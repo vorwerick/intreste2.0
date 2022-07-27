@@ -52,8 +52,10 @@ class RemoteServer {
 
             startReadTask(serialPort)
             //startWriteTask(serialPort)
-            write("AT+UART=115200,1,2")
+            write("AT+UART=115200,0,0")
             write("AT+NAME=INTRESTE")
+            write("AT+PSWD=1111")
+
             true
 
         } catch (e: IOException) {
@@ -73,9 +75,11 @@ class RemoteServer {
                 try {
                     val buffer = ByteArray(512)
                     val bytes = inputStream?.read(buffer) ?: 0
+                    Log.info("REMOTE READ", buffer.toString())
+
                     if (bytes > 0) {
                         val message = String(buffer.sliceArray(0 until bytes))
-                        Log.info("REMOTE", message)
+                        Log.info("REMOTE READ", message)
                         if (message.contains(MessageProtocol.START_CHAR)) {
                             reading = true
                         }
