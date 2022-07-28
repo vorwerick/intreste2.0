@@ -5,6 +5,7 @@ import com.beust.klaxon.Klaxon
 import com.fazecast.jSerialComm.SerialPort
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import service.game.data.GameObject
 import service.game.data.GameStatus
@@ -41,6 +42,12 @@ class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionL
         if (serialPort != null) {
             remoteServer.start(serialPort, this, this)
             started = true
+            GlobalScope.launch {
+                while (true){
+                    delay(1000)
+                    remoteServer.sendMessage(MessageProtocol.PING, null)
+                }
+            }
             return true
         }
         Log.warn(this.javaClass.canonicalName, "Serial port rfcomm not found!")
