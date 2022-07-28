@@ -22,8 +22,7 @@ dependencies {
     implementation(compose.desktop.currentOs)
 
     implementation("com.fazecast:jSerialComm:[2.0.0,3.0.0)")
-
-    implementation("com.google.code.gson:gson:2.8.9")
+    implementation ("com.beust:klaxon:5.5")
 
 
     implementation(files("libs/commons-lang3-3.8.1.jar"))

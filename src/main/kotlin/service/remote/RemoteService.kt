@@ -1,15 +1,17 @@
 package service.remote
 
+import com.beust.klaxon.JsonObject
+import com.beust.klaxon.Klaxon
 import com.fazecast.jSerialComm.SerialPort
-import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import service.game.data.GameObject
 import service.game.data.GameStatus
 import service.remote.api.CurrentGame
 import service.remote.api.GameState
-import service.remote.api.Packet
 import service.remote.protocol.MessageProtocol
 import utils.Log
-import java.lang.StringBuilder
 
 
 class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionListener {
@@ -51,15 +53,6 @@ class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionL
         remoteServer.dispose()
     }
 
-    override fun onReadMessage(message: String) {
-        Log.info(this.javaClass.canonicalName, "Message received $message")
-
-        val text = message.replace(MessageProtocol.START_CHAR, "").replace(MessageProtocol.END_CHAR, "")
-        val gson = Gson()
-        val packet = gson.fromJson(text, Packet::class.java)
-
-        remoteCommunicationListener?.onRemoteCommand(packet.endpoint, packet.payload)
-    }
 
     fun setCommandListener(remoteCommunicationListener: RemoteCommunicationListener) {
         this.remoteCommunicationListener = remoteCommunicationListener
@@ -88,33 +81,34 @@ class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionL
             gameStatus.hitPanelId,
             gameStatus.hitPanelIndex
         )
+        val jsonString = Klaxon().toJsonString(currentGame)
 
-        val gson = Gson()
-        val payload = gson.toJson(currentGame)
-        val packet = Packet(
-            payload,
-            System.currentTimeMillis(),
-            Packet.Direction.RESPONSE.toString(),
-            "current_game"
+        remoteServer.sendMessage(
+            MessageProtocol.DATA, JsonObject(
+                mapOf("command" to "currentGame", "currentGame" to jsonString)
+            )
         )
-        val g = Gson()
-        val p = g.toJson(packet)
-        val stringBuilder = StringBuilder()
-        stringBuilder.insert(0, MessageProtocol.START_CHAR).append(p).append(MessageProtocol.END_CHAR)
-        Log.info(this.javaClass.canonicalName, "Message sent: " + stringBuilder.toString())
-        remoteServer.write(stringBuilder.toString())
     }
 
     fun sendNoGame() {
-        val packet = Packet(
-            null,
-            System.currentTimeMillis(),
-            Packet.Direction.RESPONSE.toString(),
-            "current_game"
+        remoteServer.sendMessage(
+            MessageProtocol.DATA, JsonObject(
+                mapOf("command" to "currentGame", "currentGame" to null)
+            )
         )
-        val g = Gson()
-        val p = g.toJson(packet)
-        remoteServer.write(p)
+    }
+
+    override fun onDataReceived(type: Int, jsonObject: JsonObject) {
+        GlobalScope.launch(Dispatchers.Main) {
+            //TODO
+        }
+
+    }
+
+    override fun onPingReceived() {
+    }
+
+    override fun onResponseOkReceived(messageId: Long) {
     }
 }
 

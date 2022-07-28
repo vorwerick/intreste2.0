@@ -1,19 +1,20 @@
 package service.remote.api
 
-import com.google.gson.annotations.SerializedName
+import com.beust.klaxon.Json
+
 
 data class CurrentGame(
-    @SerializedName("gameState") val gameState: String,
-    @SerializedName("idGame") val idGame: Int,
-    @SerializedName("timeout") val timeout: Int,
-    @SerializedName("hitPoints") val hitPoints: Int,
-    @SerializedName("missesPoints") val missesPoints: Int,
-    @SerializedName("gameName") val gameName: String,
-    @SerializedName("hits") val hits: Int,
-    @SerializedName("misses") val misses: Int,
-    @SerializedName("score") val score: Int,
-    @SerializedName("hitPanelId") val hitPanelId: Int,
-    @SerializedName("hitPanelIndex") val hitPanelIndex: Int,
+    @Json("gameState") val gameState: String,
+    @Json("idGame") val idGame: Int,
+    @Json("timeout") val timeout: Int,
+    @Json("hitPoints") val hitPoints: Int,
+    @Json("missesPoints") val missesPoints: Int,
+    @Json("gameName") val gameName: String,
+    @Json("hits") val hits: Int,
+    @Json("misses") val misses: Int,
+    @Json("score") val score: Int,
+    @Json("hitPanelId") val hitPanelId: Int,
+    @Json("hitPanelIndex") val hitPanelIndex: Int,
 ) {
 
 }

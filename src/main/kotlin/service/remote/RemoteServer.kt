@@ -1,6 +1,8 @@
 package service.remote
 
 import Constants
+import com.beust.klaxon.JsonObject
+import com.beust.klaxon.Parser
 import com.fazecast.jSerialComm.SerialPort
 import com.fazecast.jSerialComm.SerialPortIOException
 import com.fazecast.jSerialComm.SerialPortTimeoutException
@@ -29,8 +31,9 @@ class RemoteServer {
     var inputStream: InputStream? = null
     var outputStream: OutputStream? = null
 
+    val messageProtocol: MessageProtocol = MessageProtocol()
 
-    var stringbuilder = StringBuilder()
+
 
     enum class ConnectionStatus {
         CONNECTED, DISCONNECTED, CONNECTING, DISCONNECTING
@@ -45,6 +48,9 @@ class RemoteServer {
         this.readMessageListener = readMessageListener
         this.connectionStatusListener = connectionListener
 
+        messageProtocol.readMessageCallback = { message ->
+            resolveMessage(message)
+        }
 
         return try {
             serialPort.baudRate = Constants.HC_05_BT_MODULE_BAUD
@@ -63,11 +69,24 @@ class RemoteServer {
 
     }
 
+    private fun resolveMessage(message: MessageProtocol.Message) {
+        if (message.type == MessageProtocol.DATA) {
+            val jsonObject = Parser.default().parse(message.data) as JsonObject
+            readMessageListener?.onDataReceived(message.type, jsonObject)
+        }
+        if (message.type == MessageProtocol.PING) {
+            readMessageListener?.onPingReceived()
+        }
+        if (message.type == MessageProtocol.RESPONSE_OK) {
+            readMessageListener?.onResponseOkReceived(message.id)
+        }
+
+        sendMessage(MessageProtocol.RESPONSE_OK, null)
+    }
+
     private fun startReadTask(serialPort: SerialPort): Thread {
         return thread(start = true, isDaemon = false, name = "COMM_BLUETOOTH_READ_THREAD") {
             val inputStream = serialPort.inputStream
-            val readBuffer = mutableListOf<Byte>()
-            var reading = false
             while (true) {
                 Thread.sleep(utils.Constants.NONBLOCKING_CYCLE_DELAY)
                 try {
@@ -79,38 +98,19 @@ class RemoteServer {
                     val buffer = ByteArray(available)
                     val bytes = inputStream?.read(buffer, 0, available) ?: 0
 
-                    val message = String(buffer)
-                    Log.info("REMOTE READ", message)
-                    if (message.contains(MessageProtocol.START_CHAR)) {
-                        reading = true
-                    }
-                    if (reading) {
-                        readBuffer.addAll(message.toByteArray().toMutableList())
-                        if ((message.contains(MessageProtocol.END_CHAR))) {
-                            readMessageListener?.onReadMessage(String(readBuffer.toByteArray()))
-                            readBuffer.clear()
-                            reading = false
-                        }
-                    }
+                    messageProtocol.readBytes(buffer)
+
 
                 } catch (e: IOException) {
-
+                    Log.error("HH", e.localizedMessage)
                 } catch (se: SerialPortIOException) {
+                    Log.error("HH", se.localizedMessage)
 
                 } catch (ste: SerialPortTimeoutException) {
+                    Log.error("HH", ste.localizedMessage)
 
                 }
             }
-        }
-    }
-
-
-    private fun startConnection() {
-
-        GlobalScope.launch(Dispatchers.IO) {
-            delay(2000)
-
-
         }
     }
 
@@ -129,7 +129,22 @@ class RemoteServer {
         }
     }
 
+    fun sendMessage(type: Int, data: JsonObject?): Boolean {
+        val message = MessageProtocol.Message(
+            0,
+            type,
+            System.currentTimeMillis(),
+            data?.size ?: 0,
+            data?.toJsonString() ?: ""
+        )
+        val packagedMessage = messageProtocol.packMessage(message)
+        write(packagedMessage)
+        //messageCount++;
+        return true
+    }
+
     fun write(message: String) {
+
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 val bytes = message.toByteArray()
@@ -145,7 +160,9 @@ class RemoteServer {
     }
 
     interface ReadMessageListener {
-        fun onReadMessage(message: String)
+        fun onDataReceived(type: Int, jsonObject: JsonObject)
+        fun onPingReceived()
+        fun onResponseOkReceived(messageId: Long)
     }
 
     interface ConnectionListener {
