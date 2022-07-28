@@ -47,14 +47,12 @@ class RemoteServer {
 
 
         return try {
+            serialPort.baudRate = Constants.HC_05_BT_MODULE_BAUD
             serialPort.openPort()
             Log.info(this.javaClass.canonicalName, "Opening serial port for communication")
 
             startReadTask(serialPort)
             //startWriteTask(serialPort)
-            write("AT+UART=115200,0,0")
-            write("AT+NAME=INTRESTE")
-            write("AT+PSWD=1111")
 
             true
 

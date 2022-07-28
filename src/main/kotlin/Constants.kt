@@ -35,4 +35,10 @@ object Constants {
     const val WRITE_SAFE_DELAY = 2L
 
     const val ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION"
+
+
+    const val HC_05_BT_MODULE_NAME = "Intreste"
+    const val HC_05_BT_MODULE_PIN = "95633738"
+    const val HC_05_BT_MODULE_BAUD = 115200
+    const val HC_05_BT_MODULE_MAC = "00:22:04:00:27:80"
 }
