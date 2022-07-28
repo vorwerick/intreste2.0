@@ -27,7 +27,6 @@ class MessageProtocol {
         val builder = StringBuilder()
         builder.append(START_CHAR)
             .append(SPLIT_CHAR).append(message.id)
-            .append(SPLIT_CHAR).append(SPLIT_CHAR)
             .append(SPLIT_CHAR).append(message.type)
             .append(SPLIT_CHAR).append(message.timestamp)
             .append(SPLIT_CHAR).append(message.dataLength)
