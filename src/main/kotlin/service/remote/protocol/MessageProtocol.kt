@@ -25,8 +25,14 @@ class MessageProtocol {
     // ^;612;10;192494924;3000;{};&
     fun packMessage(message: Message): String {
         val builder = StringBuilder()
-        builder.append(START_CHAR).append(message.id).append(message.type).append(message.timestamp)
-            .append(message.dataLength).append(message.data).append(END_CHAR)
+        builder.append(START_CHAR)
+            .append(SPLIT_CHAR).append(message.id)
+            .append(SPLIT_CHAR).append(SPLIT_CHAR)
+            .append(SPLIT_CHAR).append(message.type)
+            .append(SPLIT_CHAR).append(message.timestamp)
+            .append(SPLIT_CHAR).append(message.dataLength)
+            .append(SPLIT_CHAR).append(message.data)
+            .append(SPLIT_CHAR).append(END_CHAR)
         Log.info("HOO", builder.toString())
         return builder.toString()
     }
