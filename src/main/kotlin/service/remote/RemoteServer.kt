@@ -148,8 +148,7 @@ class RemoteServer {
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 val bytes = message.toByteArray()
-                outputStream?.write(bytes)
-                outputStream?.flush()
+                outputStream!!.write(bytes)
                 Log.info(this.javaClass.canonicalName, "Message sent $message")
 
             } catch (e: IOException) {
