@@ -73,7 +73,8 @@ class RemoteServer {
     private fun resolveMessage(message: MessageProtocol.Message) {
 
         if (message.type == MessageProtocol.DATA) {
-            val jsonObject = Klaxon().parse<JsonObject?>(message.data)
+            val parser: Parser = Parser.default()
+            val jsonObject: JsonObject? = parser.parse(StringBuilder(message.data)) as JsonObject?
             if(jsonObject == null){
                 sendMessage(MessageProtocol.RESPONSE_ERROR, null)
                 return
