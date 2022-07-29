@@ -2,6 +2,7 @@ package service.remote
 
 import Constants
 import com.beust.klaxon.JsonObject
+import com.beust.klaxon.Klaxon
 import com.beust.klaxon.Parser
 import com.fazecast.jSerialComm.SerialPort
 import com.fazecast.jSerialComm.SerialPortIOException
@@ -72,10 +73,13 @@ class RemoteServer {
     private fun resolveMessage(message: MessageProtocol.Message) {
 
         if (message.type == MessageProtocol.DATA) {
-            val jsonObject = Parser.default().parse(message.data) as JsonObject
+            val jsonObject = Klaxon().parse<JsonObject?>(message.data)
+            if(jsonObject == null){
+                sendMessage(MessageProtocol.RESPONSE_ERROR, null)
+                return
+            }
             readMessageListener?.onDataReceived(message.type, jsonObject)
             sendMessage(MessageProtocol.RESPONSE_OK, null)
-
         }
         if (message.type == MessageProtocol.PING) {
             readMessageListener?.onPingReceived()
@@ -138,8 +142,8 @@ class RemoteServer {
             0,
             type,
             System.currentTimeMillis(),
-            dataString?.length ?: 0,
-            dataString ?: ""
+            dataString?.length ?: 2,
+            dataString ?: "{}"
         )
         val packagedMessage = messageProtocol.packMessage(message)
         write(packagedMessage)
