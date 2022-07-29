@@ -4,7 +4,7 @@ import utils.Log
 
 class MessageProtocol {
 
-    private val inputBuffer = mutableListOf<String>()
+    private val inputBuffer = mutableListOf<Char>()
     var readMessageCallback: ((message: Message) -> Unit)? = null
 
     companion object {
@@ -15,9 +15,9 @@ class MessageProtocol {
         const val RESPONSE_OK = 10
         const val RESPONSE_ERROR = 20
 
-        const val START_CHAR = "^"
-        const val END_CHAR = "&"
-        const val SPLIT_CHAR = ";"
+        const val START_CHAR: Char = '^'
+        const val END_CHAR: Char = '&'
+        const val SPLIT_CHAR: Char = ';'
         const val NUMBER_OF_PARAMETERS =
             7 // start char, id, type, timestamp, data length,data, end char
     }
@@ -37,21 +37,21 @@ class MessageProtocol {
     }
 
     fun readBytes(bytes: ByteArray) {
-        bytes.forEach { b ->
-            val char = b.toString()
+        String(bytes).forEach { char ->
             inputBuffer.add(char)
+
             if (char == END_CHAR) {
+
                 val indexOfStartChar = inputBuffer.indexOfLast { e -> e == START_CHAR }
                 if (indexOfStartChar >= 0) {
                     val block =
                         inputBuffer.slice(indexOfStartChar until inputBuffer.size).joinToString("")
                     // message is ok
-                    Log.info("Message protocol", block)
                     try {
                         val message = checkMessage(block)
                         readMessageCallback?.invoke(message)
                     } catch (e: IllegalStateException) {
-                        Log.error("HOO", e.localizedMessage ?: "unknown error")
+                        Log.error("Read bytes", e.localizedMessage ?: "unknown error")
                     }
                 }
                 inputBuffer.clear()
@@ -68,10 +68,10 @@ class MessageProtocol {
         if (parametersCount != NUMBER_OF_PARAMETERS) {
             throw IllegalStateException("Invalid message - less or more than $NUMBER_OF_PARAMETERS parameters")
         }
-        if (parameters[0] != START_CHAR) {
+        if (parameters[0].toCharArray()[0] != START_CHAR) {
             throw IllegalStateException("Invalid message - invalid start char")
         }
-        if (parameters[parametersCount - 1] != END_CHAR) {
+        if (parameters[parametersCount - 1].toCharArray()[0] != END_CHAR) {
             throw IllegalStateException("Invalid message - invalid end char")
         }
 
@@ -97,5 +97,9 @@ class MessageProtocol {
         val timestamp: Long,
         val dataLength: Int,
         val data: String
-    )
+    ) {
+        override fun toString(): String {
+            return "id: $id type:$type data:$data"
+        }
+    }
 }

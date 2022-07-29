@@ -70,6 +70,8 @@ class RemoteServer {
     }
 
     private fun resolveMessage(message: MessageProtocol.Message) {
+        Log.info("RECEIVED", message.toString())
+
         if (message.type == MessageProtocol.DATA) {
             val jsonObject = Parser.default().parse(message.data) as JsonObject
             readMessageListener?.onDataReceived(message.type, jsonObject)
@@ -149,7 +151,6 @@ class RemoteServer {
             try {
                 val bytes = message.toByteArray()
                 outputStream!!.write(bytes)
-                Log.info(this.javaClass.canonicalName, "Message sent $message")
 
             } catch (e: IOException) {
                 e.printStackTrace()
