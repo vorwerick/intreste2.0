@@ -56,7 +56,7 @@ class RemoteServer {
             serialPort.baudRate = Constants.HC_05_BT_MODULE_BAUD
             serialPort.openPort()
             Log.info(this.javaClass.canonicalName, "Opening serial port for communication")
-
+            outputStream = serialPort.outputStream
             startReadTask(serialPort)
             //startWriteTask(serialPort)
 
