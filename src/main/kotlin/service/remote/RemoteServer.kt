@@ -133,12 +133,13 @@ class RemoteServer {
     }
 
     fun sendMessage(type: Int, data: JsonObject?): Boolean {
+        val dataString = data?.toJsonString()
         val message = MessageProtocol.Message(
             0,
             type,
             System.currentTimeMillis(),
-            data?.size ?: 0,
-            data?.toJsonString() ?: ""
+            dataString?.length ?: 0,
+            dataString ?: ""
         )
         val packagedMessage = messageProtocol.packMessage(message)
         write(packagedMessage)
