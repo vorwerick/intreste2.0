@@ -70,20 +70,21 @@ class RemoteServer {
     }
 
     private fun resolveMessage(message: MessageProtocol.Message) {
-        Log.info("RECEIVED", message.toString())
 
         if (message.type == MessageProtocol.DATA) {
             val jsonObject = Parser.default().parse(message.data) as JsonObject
             readMessageListener?.onDataReceived(message.type, jsonObject)
+            sendMessage(MessageProtocol.RESPONSE_OK, null)
+
         }
         if (message.type == MessageProtocol.PING) {
             readMessageListener?.onPingReceived()
+            sendMessage(MessageProtocol.PONG, null)
         }
         if (message.type == MessageProtocol.RESPONSE_OK) {
             readMessageListener?.onResponseOkReceived(message.id)
         }
 
-        sendMessage(MessageProtocol.RESPONSE_OK, null)
     }
 
     private fun startReadTask(serialPort: SerialPort): Thread {

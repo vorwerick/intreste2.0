@@ -12,6 +12,7 @@ class MessageProtocol {
         const val CONNECT = 1
         const val DISCONNECT = 2
         const val PING = 3
+        const val PONG = 4
         const val RESPONSE_OK = 10
         const val RESPONSE_ERROR = 20
 
@@ -32,7 +33,6 @@ class MessageProtocol {
             .append(SPLIT_CHAR).append(message.dataLength)
             .append(SPLIT_CHAR).append(message.data)
             .append(SPLIT_CHAR).append(END_CHAR)
-        Log.info("Pack message", builder.toString())
         return builder.toString()
     }
 

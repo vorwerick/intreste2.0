@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import service.game.data.GameLibrary
 import service.game.data.GameObject
 import service.game.data.GameStatus
 import service.remote.api.CurrentGame
@@ -43,7 +44,7 @@ class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionL
             remoteServer.start(serialPort, this, this)
             started = true
             GlobalScope.launch {
-                while (true){
+                while (true) {
                     delay(1000)
                     remoteServer.sendMessage(MessageProtocol.PING, null)
                 }
@@ -106,8 +107,40 @@ class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionL
     }
 
     override fun onDataReceived(type: Int, jsonObject: JsonObject) {
+
         GlobalScope.launch(Dispatchers.Main) {
-            //TODO
+            if (jsonObject["command"] == "getCurrentGame") {
+                Service.gameService.sendCurrentGameStatus()
+                Log.info("Data received", "get current game")
+            }
+            if (jsonObject["command"] == "sortPanels") {
+//Service.moduleSensorService.startSorting()
+                Log.info("Data received", "sort panels")
+
+            }
+            if (jsonObject["command"] == "startGame") {
+                val game = GameLibrary.all().first()
+                game.configure(
+                    GameObject.Configuration(
+                        jsonObject["hitPoints"].toString().toIntOrNull(10) ?: GameObject.defaultHitPoints,
+                        jsonObject["missesPoints"].toString().toIntOrNull(10) ?: GameObject.defaultMissPoints,
+                        jsonObject["timeout"].toString().toIntOrNull(10) ?: GameObject.defaultTimeout
+                    )
+                )
+                Service.gameService.startGameProcess(game)
+                Log.info("Data received", "start game " + jsonObject.toJsonString())
+
+
+            }
+            if (jsonObject["command"] == "interruptGame") {
+                Service.gameService.interruptGameProcess()
+                Log.info("Data received", "interrupt game")
+
+            }
+            if (jsonObject["command"] == "interruptSortPanels") {
+                Log.info("Data received", "interrupt sorting")
+
+            }
         }
 
     }
