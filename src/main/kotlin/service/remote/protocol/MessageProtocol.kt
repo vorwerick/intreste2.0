@@ -32,7 +32,7 @@ class MessageProtocol {
             .append(SPLIT_CHAR).append(message.dataLength)
             .append(SPLIT_CHAR).append(message.data)
             .append(SPLIT_CHAR).append(END_CHAR)
-        Log.info("HOO", builder.toString())
+        Log.info("Pack message", builder.toString())
         return builder.toString()
     }
 
@@ -46,7 +46,7 @@ class MessageProtocol {
                     val block =
                         inputBuffer.slice(indexOfStartChar until inputBuffer.size).joinToString("")
                     // message is ok
-                    Log.info("HOO", block)
+                    Log.info("Message protocol", block)
                     try {
                         val message = checkMessage(block)
                         readMessageCallback?.invoke(message)
