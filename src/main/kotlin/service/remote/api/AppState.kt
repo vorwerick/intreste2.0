@@ -7,7 +7,7 @@ data class AppState(
     @Json("panelCount") val panelCount: Int,
     @Json("cpuTemp") val cpuTemp: Int,
     @Json("version") val version: String,
-    @Json("status") val status: String,
+    @Json("gameActive") val gameActive: Boolean,
     @Json("panelsSorted") val panelsSorted: Boolean,
     @Json("panelSortingActive") val panelSortingActive: Boolean,
     @Json("intresteConnected") val intresteConnected: Boolean,

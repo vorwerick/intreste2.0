@@ -84,7 +84,7 @@ class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionL
             Service.moduleSensorService.getSensorsConnected(),
             RaspberryInfoService.coreTemp.toInt(),
             "${Build.VERSION_NAME} build ${Build.VERSION_NUMBER}",
-            "",
+            Service.gameService.selectedGameObject != null,
             Service.moduleSensorService.configuredPanels.isNotEmpty(),
             Service.moduleSensorService.isSorting,
             Service.moduleCommunicationService.isConnected(),
