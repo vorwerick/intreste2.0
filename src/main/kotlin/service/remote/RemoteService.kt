@@ -10,6 +10,10 @@ import kotlinx.coroutines.launch
 import service.game.data.GameLibrary
 import service.game.data.GameObject
 import service.game.data.GameStatus
+import service.hw.ModuleSensorService
+import service.hw.Panel
+import service.hw.RaspberryInfoService
+import service.remote.api.AppState
 import service.remote.api.CurrentGame
 import service.remote.api.GameState
 import service.remote.protocol.MessageProtocol
@@ -75,6 +79,28 @@ class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionL
         remoteCommunicationListener?.onConnectionStatusChanged(status)
     }
 
+    fun sendAppInfo() {
+        val state = AppState(
+            Service.moduleSensorService.getSensorsConnected(),
+            RaspberryInfoService.coreTemp.toInt(),
+            "${Build.VERSION_NAME} build ${Build.VERSION_NUMBER}",
+            "",
+            Service.moduleSensorService.configuredPanels.isNotEmpty(),
+            Service.moduleSensorService.isSorting,
+            Service.moduleCommunicationService.isConnected(),
+            Service.externalDisplayService.isConnected(), "*"
+
+
+        )
+        val jsonString = Klaxon().toJsonString(state)
+
+        remoteServer.sendMessage(
+            MessageProtocol.DATA, JsonObject(
+                mapOf("command" to "state", "state" to jsonString)
+            )
+        )
+    }
+
     fun sendCurrentGameInfo(status: GameState, gameObject: GameObject, gameStatus: GameStatus) {
         val currentGame = CurrentGame(
             status.toString(),
@@ -113,8 +139,26 @@ class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionL
                 Service.gameService.sendCurrentGameStatus()
                 Log.info("Data received", "get current game")
             }
+            if (jsonObject["command"] == "getState") {
+                sendAppInfo()
+                Log.info("Data received", "get current state")
+            }
             if (jsonObject["command"] == "sortPanels") {
-//Service.moduleSensorService.startSorting()
+                Service.moduleSensorService.startSorting(object : ModuleSensorService.PanelSortingListener{
+                    override fun onSortingFailed() {
+                    }
+
+                    override fun onSortingFinished(configuredPanels: List<Panel>) {
+                        Service.settingsService.saveSettings()
+                    }
+
+                    override fun onSortingProgress(sortedPanels: Int, totalPanels: Int) {
+                    }
+
+                    override fun onSortingStarted(totalPanels: Int) {
+                    }
+
+                })
                 Log.info("Data received", "sort panels")
 
             }
@@ -132,10 +176,13 @@ class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionL
 
 
             }
-            if (jsonObject["command"] == "interruptGame") {
-                Service.gameService.interruptGameProcess()
-                Log.info("Data received", "interrupt game")
-
+            if (jsonObject["command"] == "startLedTest") {
+                Log.info("Data received", "start led test")
+                Service.externalDisplayService.testDisplay()
+            }
+            if (jsonObject["command"] == "startPanelTest") {
+                Log.info("Data received", "start panel test")
+                Service.moduleCommunicationService.playPanelTest()
             }
             if (jsonObject["command"] == "interruptSortPanels") {
                 Log.info("Data received", "interrupt sorting")

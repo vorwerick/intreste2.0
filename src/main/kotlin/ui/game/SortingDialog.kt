@@ -23,8 +23,6 @@ fun SortingDialog(onDismiss: () -> Unit, onPositive: () -> Unit) {
     val sortingProgress = mutableStateOf("Not started")
     val sortedProgress = mutableStateOf<String>("---")
 
-
-
     if (!startSorting.value) {
         Service.gameService.interruptGameProcess()
         Service.moduleSensorService.startSorting(object : ModuleSensorService.PanelSortingListener {

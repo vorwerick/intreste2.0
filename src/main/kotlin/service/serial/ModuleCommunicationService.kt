@@ -52,6 +52,10 @@ class ModuleCommunicationService : CommunicationListener {
 
     private var communication: SerialCommunicationService? = null
 
+    fun isConnected(): Boolean {
+        return communication != null
+    }
+
     fun connect(): Boolean {
         Log.info(this.javaClass.name, "Communication starting")
 
@@ -125,6 +129,32 @@ class ModuleCommunicationService : CommunicationListener {
                 1
             )
         )
+    }
+
+    fun playPanelTest(){
+        GlobalScope.launch {
+            Service.moduleSensorService.sensors.forEach {
+                if(it % 2 == 0){
+                    lightUpPanel(it, Commands.PanelColor.YELLOW, 500)
+                } else {
+                    lightUpPanel(it, Commands.PanelColor.RED, 500)
+                }
+
+                delay(300)
+            }
+            delay(500)
+            Service.moduleSensorService.sensors.forEach {
+                if(it % 2 == 0){
+                    lightUpPanel(it, Commands.PanelColor.GREEN, 500)
+                } else {
+                    lightUpPanel(it, Commands.PanelColor.BLUE, 500)
+                }
+
+                delay(300)
+            }
+
+        }
+
     }
 
     fun playAnimationAllPanels(

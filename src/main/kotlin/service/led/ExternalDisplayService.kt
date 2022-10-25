@@ -83,6 +83,10 @@ class ExternalDisplayService {
     @Volatile
     private var animationDuration = -1
 
+    fun isConnected(): Boolean {
+        return client != null
+    }
+
     init {
         GlobalScope.launch {
             while (true) {

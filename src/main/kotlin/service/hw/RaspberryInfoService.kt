@@ -14,6 +14,8 @@ class RaspberryInfoService {
 
     companion object {
         private val executor = Executors.newSingleThreadExecutor()
+
+        var coreTemp = 0f
     }
 
     init {
@@ -38,6 +40,7 @@ class RaspberryInfoService {
                     val reader = BufferedReader(InputStreamReader(process.inputStream))
                     val line: String = reader.readLine()
                     val temp = line.toFloat() / 1000.0f
+                    coreTemp = temp
 
                     Log.info(
                         this.javaClass.name, "Temperature CPU: $temp C"
