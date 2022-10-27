@@ -196,6 +196,16 @@ class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionL
                 Log.info("Data received", "interrupt sorting")
 
             }
+            if (jsonObject["command"] == "restartGame") {
+                Log.info("Data received", "restart game")
+                Service.gameService.startGameProcess(
+                    Service.gameService.selectedGameObject ?: GameObject(
+                        "Zasahni co nejvic",
+                        "",
+                        GameObject.Type.CLASSIC_RANDOM_TIMEOUT, GameObject.Rules(0, 0, 2, 2, 1),
+                    )
+                )
+            }
         }
 
     }
