@@ -101,19 +101,27 @@ class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionL
         )
     }
 
-    fun sendCurrentGameInfo(status: GameState, gameObject: GameObject, gameStatus: GameStatus) {
+    fun sendCurrentGameInfo() {
+
+        val gameObject = Service.gameService.selectedGameObject ?: GameObject.emptyGameObject()
+        val status = Service.gameService.getGameState()
+        val gameStatus = Service.gameService.getGameProcessStatus()
+
+        val hitCount = gameStatus?.hitCount ?: 0
+        val missCount = gameStatus?.missCount ?: 0
+
         val currentGame = CurrentGame(
             status.toString(),
             0,
-            gameStatus.timeout,
+            gameStatus?.timeout ?: gameObject.configuration.timeoutSeconds,
             gameObject.configuration.hitPoints,
             gameObject.configuration.missesPoints,
             gameObject.name,
-            gameStatus.hitCount,
-            gameStatus.missCount,
-            ((gameStatus.hitCount * gameObject.configuration.hitPoints) + (gameStatus.missCount * gameObject.configuration.missesPoints)),
-            gameStatus.hitPanelId,
-            gameStatus.hitPanelIndex
+            hitCount,
+            missCount,
+            ((hitCount * gameObject.configuration.hitPoints) + (missCount * gameObject.configuration.missesPoints)),
+            gameStatus?.hitPanelId ?: -1,
+            gameStatus?.hitPanelIndex ?: -1
         )
         val jsonString = Klaxon().toJsonString(currentGame)
 
@@ -136,7 +144,7 @@ class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionL
 
         GlobalScope.launch(Dispatchers.Main) {
             if (jsonObject["command"] == "getCurrentGame") {
-                Service.gameService.sendCurrentGameStatus()
+                sendCurrentGameInfo()
                 Log.info("Data received", "get current game")
             }
             if (jsonObject["command"] == "getState") {
@@ -144,7 +152,7 @@ class RemoteService : RemoteServer.ReadMessageListener, RemoteServer.ConnectionL
                 Log.info("Data received", "get current state")
             }
             if (jsonObject["command"] == "sortPanels") {
-                Service.moduleSensorService.startSorting(object : ModuleSensorService.PanelSortingListener{
+                Service.moduleSensorService.startSorting(object : ModuleSensorService.PanelSortingListener {
                     override fun onSortingFailed() {
                     }
 

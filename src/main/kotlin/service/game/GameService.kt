@@ -3,6 +3,8 @@ package service.game
 import service.app.StatusMessage
 import service.game.data.GameLibrary
 import service.game.data.GameObject
+import service.game.data.GameStatus
+import service.remote.api.GameState
 import utils.Log
 
 class GameService {
@@ -69,13 +71,12 @@ class GameService {
         this.gameResultListener = gameResultListener
     }
 
-    fun sendCurrentGameStatus() {
-        if (processor == null) {
-            Service.remoteMasterService.sendNoGame()
-        } else {
-            processor!!.sendCurrentGameStatus()
-        }
+    fun getGameProcessStatus() : GameStatus? {
+        return processor?.getGameStatus()
+    }
 
+    fun getGameState() : GameState? {
+        return processor?.getState()
     }
 
 

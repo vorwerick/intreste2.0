@@ -1,6 +1,5 @@
 package service.game
 
-import kotlinx.coroutines.*
 import service.game.data.GameObject
 import service.game.data.GameStatus
 import service.hw.Panel
@@ -13,8 +12,6 @@ import service.serial.protocol.Commands
 import utils.Log
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.locks.Lock
 import kotlin.random.Random
 
 class GameProcessor() {
@@ -73,7 +70,6 @@ class GameProcessor() {
 
         gameState = GameState.PREPARED
         Service.moduleCommunicationService.stopAllAnimations()
-        Service.remoteMasterService.sendCurrentGameInfo(gameState, gameObject, gameStatus)
         Service.moduleCommunicationService.startSensorDetecting()
         Service.moduleCommunicationService.addSensorBlowListener(sensorBlowForIdleStateListener)
 
@@ -168,7 +164,6 @@ class GameProcessor() {
 
         activePanels.clear()
         gameState = GameState.PROGRESS
-        Service.remoteMasterService.sendCurrentGameInfo(gameState, gameObject, gameStatus)
         Service.moduleCommunicationService.lightOffAllPanels()
         Service.moduleCommunicationService.stopAllAnimations()
 
@@ -199,12 +194,6 @@ class GameProcessor() {
                         gameStatus.timeout = totalSeconds - secondsPassed
                         Service.gameService.gameProcessListener?.onGameTimeStep(gameStatus, gameObject)
                         Service.externalDisplayService.updateTime(gameStatus.timeout)
-
-                        Service.remoteMasterService.sendCurrentGameInfo(
-                            gameState,
-                            gameObject,
-                            gameStatus
-                        )
                     }
                 },
                 {
@@ -235,7 +224,6 @@ class GameProcessor() {
         Service.moduleCommunicationService.stopSensorDetecting()
         Service.moduleCommunicationService.lightOffAllPanels()
 
-        Service.remoteMasterService.sendCurrentGameInfo(gameState, gameObject, gameStatus)
 
         activePanels.clear()
         resultTimeStarted()
@@ -251,7 +239,6 @@ class GameProcessor() {
         gameStatus.hitCount++
         Service.moduleCommunicationService.lightOffPanel(sensorIndex) // off
         Service.gameService.gameProcessListener?.onGameHit(gameStatus, gameObject)
-        Service.remoteMasterService.sendCurrentGameInfo(gameState, gameObject, gameStatus)
         Service.externalDisplayService.updateScore((gameStatus.hitCount * gameObject.configuration.hitPoints) + gameStatus.missCount * gameObject.configuration.missesPoints)
 
         val hitPoints = gameObject.configuration.hitPoints
@@ -273,7 +260,6 @@ class GameProcessor() {
         Service.externalDisplayService.updateScore((gameStatus.hitCount * gameObject.configuration.hitPoints) + gameStatus.missCount * gameObject.configuration.missesPoints)
 
         Service.gameService.gameProcessListener?.onGameMiss(gameStatus, gameObject)
-        Service.remoteMasterService.sendCurrentGameInfo(gameState, gameObject, gameStatus)
         Service.externalDisplayService.showAnimation(false, gameObject.configuration.missesPoints.toString())
 
     }
@@ -399,8 +385,12 @@ class GameProcessor() {
             })
     }
 
-    fun sendCurrentGameStatus() {
-        Service.remoteMasterService.sendCurrentGameInfo(gameState, gameObject, gameStatus)
+    fun getGameStatus(): GameStatus {
+        return gameStatus
+    }
+
+    fun getState(): GameState {
+        return gameState
     }
 
 }

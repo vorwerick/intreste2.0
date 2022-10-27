@@ -1,5 +1,7 @@
 package service.game.data
 
+import service.remote.api.GameState
+
 class GameStatus(gameObject: GameObject) {
 
     var timeout: Int = 0
