@@ -287,17 +287,21 @@ class GameProcessor() {
                 val index = it.positionIndex
                 if (gap > 0) {
                     claimedIndexes.add(index)
-                    for (i in 1..gap) {
+                    for (i in 1..gap + 1) {
                         var indexWithGap = index + i
-                        if (indexWithGap >= panelsCount) {
-                            indexWithGap -= panelsCount
+                        val topIndex = panelsCount - 1
+                        if(indexWithGap > topIndex){
+                            val warpIndex = indexWithGap - topIndex - 1 // 3 -1 = 2
+                            indexWithGap = warpIndex
                         }
                         claimedIndexes.add(indexWithGap)
                     }
-                    for (i in 1..gap) {
+                    for (i in 1..gap + 1) {
                         var indexWithGap = index - i
-                        if (indexWithGap < 0) {
-                            indexWithGap += panelsCount
+                        val topIndex = panelsCount - 1
+                        if(indexWithGap < 0){
+                            val warpIndex = topIndex - index + 1 // 15 -3 + 1
+                            indexWithGap = warpIndex
                         }
                         claimedIndexes.add(indexWithGap)
                     }
